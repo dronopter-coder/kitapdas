@@ -1,17 +1,20 @@
 // AdMob reklamları: alt banner + ara sıra geçiş (interstitial) reklamı.
-// Gerçek reklam birimlerini AdMob'da Kitapdaş için açınca aşağıdaki REKLAM bloğunu güncelle:
-// banner ve gecis kimliklerini yaz, test'i false yap. Uygulama kimliği (ca-app-pub-…~…) ise
-// GitHub sırrı KITAPDAS_ADMOB_APP_ID ile derlemeye verilir (bkz. README).
+// Reklam birimleri aşağıdaki REKLAM bloğunda; Android uygulama kimliği (ca-app-pub-…~…)
+// derleme iş akışında (.github/workflows/apk.yml) manifest'e yazılır.
 import { Capacitor } from '@capacitor/core';
 import { AdMob, BannerAdPluginEvents, BannerAdPosition, BannerAdSize } from '@capacitor-community/admob';
 
 const PLATFORM = Capacitor.getPlatform();
 
-// Şimdilik Google'ın TEST reklam birimleri (gerçek gelir getirmez, hesabı riske atmaz).
-const REKLAM = {
+// Android: gerçek AdMob birimleri. iOS: AdMob'da ayrı iOS uygulaması açılana kadar Google'ın test birimleri.
+const REKLAM = PLATFORM === 'ios' ? {
   test: true,
-  banner: PLATFORM === 'ios' ? 'ca-app-pub-3940256099942544/2934735716' : 'ca-app-pub-3940256099942544/6300978111',
-  gecis: PLATFORM === 'ios' ? 'ca-app-pub-3940256099942544/4411468910' : 'ca-app-pub-3940256099942544/1033173712',
+  banner: 'ca-app-pub-3940256099942544/2934735716',
+  gecis: 'ca-app-pub-3940256099942544/4411468910',
+} : {
+  test: false,
+  banner: 'ca-app-pub-3204109869365538/8087489488',
+  gecis: 'ca-app-pub-3204109869365538/9839554854',
 };
 
 const ETKIN = Capacitor.isNativePlatform() && Capacitor.isPluginAvailable('AdMob');

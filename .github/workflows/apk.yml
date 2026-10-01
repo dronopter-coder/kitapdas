@@ -39,8 +39,8 @@ jobs:
           grep -n rgcfa android/variables.gradle
       - name: AdMob uygulama kimliği
         run: |
-          # Sır tanımlı değilse Google'ın test uygulama kimliği kullanılır (kimlik eksikse uygulama açılışta çöker).
-          ID="${ADMOB_APP_ID:-ca-app-pub-3940256099942544~3347511713}"
+          # AdMob > Uygulamalar'daki Android uygulama kimliği (gizli değildir; KITAPDAS_ADMOB_APP_ID sırrı varsa o kullanılır)
+          ID="${ADMOB_APP_ID:-ca-app-pub-3204109869365538~4707571112}"
           echo "AdMob uygulama kimliği: $ID"
           sed -i "s#</application>#<meta-data android:name=\"com.google.android.gms.ads.APPLICATION_ID\" android:value=\"$ID\"/></application>#" android/app/src/main/AndroidManifest.xml
           grep -c "gms.ads.APPLICATION_ID" android/app/src/main/AndroidManifest.xml

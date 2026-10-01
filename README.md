@@ -69,11 +69,8 @@ Firebase ayarı yapılmadan derlenen APK **demo modunda** çalışır: bütün v
 
 - Ana sekmelerin (Keşfet, Ara, Takas, Profil) altında **banner**; kitap ekleme, talep gönderme ve kargoya verme sonrasında **geçiş reklamı** (her 3 işlemde bir, en sık 3 dakikada bir). Giriş, form ve kitap detay ekranlarında reklam yoktur.
 - AB/BK kullanıcıları için Google UMP onay penceresi gösterilir (*AdMob → Gizlilik ve mesajlaşma* bölümünde GDPR mesajı oluşturulmalı).
-- Şu an Google'ın **test** reklamları gösterilir. Gerçek reklam için:
-  1. AdMob'da *Uygulamalar → Uygulama ekle → Android* ile Kitapdaş'ı ekle, bir **Banner** ve bir **Geçiş reklamı** birimi oluştur.
-  2. `src/reklam.js` içindeki `REKLAM` bloğuna iki birim kimliğini yaz ve `test: false` yap.
-  3. Uygulama kimliğini (`ca-app-pub-…~…`) GitHub sırrı **`KITAPDAS_ADMOB_APP_ID`** olarak ekle.
-  > Nûr Vakti'nin reklam birimlerini burada kullanma: her uygulamanın kendi birimleri olmalı.
+- Android'de gerçek reklam birimleri kullanılır (`src/reklam.js`); uygulama kimliği `ca-app-pub-3204109869365538~4707571112` derleme sırasında manifest'e yazılır. iOS için AdMob'da ayrı bir iOS uygulaması açılana kadar test birimleri gösterilir.
+- Kendi telefonunda test ederken reklamlara **tıklama**; AdMob hesabı geçersiz tıklama nedeniyle kısıtlanabilir. Telefonunu AdMob'da *Ayarlar → Test cihazları* bölümüne eklemen en güvenlisi.
 
 ## Yerelde geliştirme
 
