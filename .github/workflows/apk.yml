@@ -1,0 +1,96 @@
+name: Kitapdaş APK derle
+# Her push'ta (ya da elle) çalışır. Firebase sırları tanımlı değilse uygulama
+# DEMO MODUNDA derlenir (veriler yalnızca telefonda). Kurulum: README.md
+on:
+  push:
+    branches: [main, 'claude/**']
+  workflow_dispatch:
+env:
+  FIREBASE_CONFIG: ${{ secrets.KITAPDAS_FIREBASE_CONFIG }}
+  GOOGLE_SERVICES_JSON: ${{ secrets.KITAPDAS_GOOGLE_SERVICES_JSON }}
+  KS_B64: ${{ secrets.KEYSTORE_BASE64 }}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 21 }
+      - name: Paketler
+        run: npm install --no-audit --no-fund
+      - name: Web uygulamasını derle (src → www)
+        run: npm run build
+      - name: Google girişi yoksa yerel eklentiyi çıkar
+        if: ${{ env.GOOGLE_SERVICES_JSON == '' }}
+        run: |
+          echo "KITAPDAS_GOOGLE_SERVICES_JSON tanımlı değil: yerel Google girişi eklentisi APK'ya eklenmeyecek."
+          npm uninstall @capacitor-firebase/authentication --no-audit --no-fund
+      - run: npx cap add android
+      - name: Firebase (google-services.json) ve Google girişi
+        if: ${{ env.GOOGLE_SERVICES_JSON != '' }}
+        run: |
+          printf '%s' "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
+          python3 -c "import json;d=json.load(open('android/app/google-services.json'));print('Firebase projesi:',d['project_info']['project_id'])"
+          # @capacitor-firebase/authentication: Google sağlayıcısını derlemeye dahil et
+          sed -i 's/^ext {/ext {\n    rgcfaIncludeGoogle = true/' android/variables.gradle
+          grep -n rgcfa android/variables.gradle
+      - name: Simge, renkler ve sürüm
+        run: |
+          sed -i -E "s/versionCode[ =]+[0-9]+/versionCode ${{ github.run_number }}/" android/app/build.gradle
+          python3 -m pip install --quiet pillow
+          python3 - <<'PY'
+          from PIL import Image, ImageDraw
+          import os
+          R='android/app/src/main/res'
+          fg=Image.open('kaynak/icon-fg.png').convert('RGBA'); full=Image.open('kaynak/icon-full.png').convert('RGB')
+          for d,a,b in [('mdpi',48,108),('hdpi',72,162),('xhdpi',96,216),('xxhdpi',144,324),('xxxhdpi',192,432)]:
+              p=f'{R}/mipmap-{d}/'
+              os.makedirs(p,exist_ok=True)
+              full.resize((a,a),Image.LANCZOS).save(p+'ic_launcher.png')
+              m=Image.new('L',(a*4,a*4),0); ImageDraw.Draw(m).ellipse([0,0,a*4-1,a*4-1],fill=255)
+              r=full.resize((a,a),Image.LANCZOS).convert('RGBA'); r.putalpha(m.resize((a,a),Image.LANCZOS)); r.save(p+'ic_launcher_round.png')
+              fg.resize((b,b),Image.LANCZOS).save(p+'ic_launcher_foreground.png')
+          os.makedirs(R+'/mipmap-anydpi-v26',exist_ok=True); os.makedirs(R+'/values',exist_ok=True)
+          x='<?xml version="1.0" encoding="utf-8"?><adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android"><background android:drawable="@color/kd_bg"/><foreground android:drawable="@mipmap/ic_launcher_foreground"/></adaptive-icon>'
+          open(R+'/mipmap-anydpi-v26/ic_launcher.xml','w').write(x); open(R+'/mipmap-anydpi-v26/ic_launcher_round.xml','w').write(x)
+          open(R+'/values/kd_colors.xml','w').write('<?xml version="1.0" encoding="utf-8"?><resources><color name="kd_bg">#1E2235</color></resources>')
+          PY
+      - run: npx cap sync android
+      - name: Sabit debug imzası (güncellemeler eskisinin üzerine kurulsun, Google girişi SHA-1 ile eşleşsin)
+        run: |
+          cp keystore/debug.keystore android/app/debug.keystore
+          python3 - <<'PY'
+          import re
+          p='android/app/build.gradle'
+          s=open(p).read()
+          blok = "android {\n    signingConfigs {\n        debug {\n            storeFile file('debug.keystore')\n            storePassword 'android'\n            keyAlias 'androiddebugkey'\n            keyPassword 'android'\n        }\n    }\n"
+          assert re.search(r'^android \{\s*$', s, re.M), 'android blogu bulunamadi'
+          s=re.sub(r'^android \{\s*\n', blok, s, count=1, flags=re.M)
+          open(p,'w').write(s)
+          PY
+          echo "Firebase'e eklenecek SHA-1 parmak izi:"
+          keytool -list -v -keystore keystore/debug.keystore -storepass android | grep 'SHA1:'
+      - name: Debug APK ve release AAB derle
+        working-directory: android
+        run: chmod +x gradlew && ./gradlew assembleDebug bundleRelease
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Kitapdas-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+      - name: AAB imzala (KEYSTORE_BASE64 sırrı tanımlıysa)
+        if: ${{ env.KS_B64 != '' }}
+        env:
+          KS_PASS: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASS: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: |
+          echo "$KS_B64" | base64 -d > upload.jks
+          jarsigner -keystore upload.jks -storepass "$KS_PASS" -keypass "$KEY_PASS" -sigalg SHA256withRSA -digestalg SHA-256 android/app/build/outputs/bundle/release/app-release.aab "$KEY_ALIAS"
+          rm upload.jks
+      - uses: actions/upload-artifact@v4
+        if: ${{ env.KS_B64 != '' }}
+        with:
+          name: Kitapdas-AAB
+          path: android/app/build/outputs/bundle/release/app-release.aab

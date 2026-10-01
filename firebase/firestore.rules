@@ -1,0 +1,85 @@
+rules_version = '2';
+// Kitapdaş — Firestore güvenlik kuralları
+// Yükleme: Firebase konsolu > Firestore Database > Kurallar (Rules) sekmesine yapıştır > Yayınla
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function girisli() { return request.auth != null; }
+    function ben(uid) { return girisli() && request.auth.uid == uid; }
+    function degisen() { return request.resource.data.diff(resource.data).affectedKeys(); }
+    function metin(v, en) { return v is string && v.size() <= en; }
+
+    // ——— Kullanıcı profilleri (herkese açık: ad, şehir, foto, hakkında) ———
+    match /kullanicilar/{uid} {
+      allow read: if girisli();
+      allow create, update: if ben(uid)
+        && metin(request.resource.data.ad, 40)
+        && metin(request.resource.data.sehir, 30)
+        && metin(request.resource.data.get('hakkinda', ''), 200);
+      // Kayıtlı teslimat adresi: yalnızca sahibi
+      match /ozel/{belge} {
+        allow read, write: if ben(uid);
+      }
+    }
+
+    // ——— Kitaplar ———
+    match /kitaplar/{kitapId} {
+      allow read: if girisli();
+      allow create: if ben(request.resource.data.sahipId)
+        && request.resource.data.durum == 'musait'
+        && metin(request.resource.data.ad, 120)
+        && metin(request.resource.data.yazar, 80)
+        && metin(request.resource.data.aciklama, 500);
+      // Sahibi düzenleyebilir; sahiplik devredilemez.
+      allow update: if ben(resource.data.sahipId)
+        && request.resource.data.sahipId == resource.data.sahipId
+        && request.resource.data.durum in ['musait', 'rezerve', 'verildi'];
+      allow delete: if ben(resource.data.sahipId);
+    }
+
+    // ——— Talepler ———
+    // Akış: bekliyor → kabul → kargoda → teslim   (yan yollar: red, iptal)
+    match /talepler/{talepId} {
+      allow read: if girisli()
+        && (request.auth.uid == resource.data.sahipId || request.auth.uid == resource.data.isteyenId);
+
+      allow create: if ben(request.resource.data.isteyenId)
+        && request.resource.data.durum == 'bekliyor'
+        && request.resource.data.kargo == null
+        && metin(request.resource.data.not, 300)
+        && request.resource.data.sahipId != request.auth.uid
+        && get(/databases/$(database)/documents/kitaplar/$(request.resource.data.kitapId)).data.sahipId == request.resource.data.sahipId
+        && get(/databases/$(database)/documents/kitaplar/$(request.resource.data.kitapId)).data.durum == 'musait';
+
+      // Kitap sahibinin yapabildikleri: kabul / red / vazgeç / kargoya ver
+      allow update: if ben(resource.data.sahipId)
+        && degisen().hasOnly(['durum', 'kargo', 'guncelleme'])
+        && (
+          (resource.data.durum == 'bekliyor' && request.resource.data.durum in ['kabul', 'red'])
+          || (resource.data.durum == 'kabul' && request.resource.data.durum == 'red')
+          || (resource.data.durum == 'kabul' && request.resource.data.durum == 'kargoda'
+              && metin(request.resource.data.kargo.firma, 40)
+              && metin(request.resource.data.kargo.takipNo, 40))
+        );
+
+      // Talep edenin yapabildikleri: geri çekme / teslim aldım
+      allow update: if ben(resource.data.isteyenId)
+        && degisen().hasOnly(['durum', 'guncelleme'])
+        && (
+          (resource.data.durum == 'bekliyor' && request.resource.data.durum == 'iptal')
+          || (resource.data.durum == 'kargoda' && request.resource.data.durum == 'teslim')
+        );
+
+      // Teslimat adresi: talep eden yazar; kitap sahibi yalnızca talebi kabul ettikten sonra okur.
+      match /gizli/{belge} {
+        function talep() { return get(/databases/$(database)/documents/talepler/$(talepId)).data; }
+        allow create: if girisli()
+          && getAfter(/databases/$(database)/documents/talepler/$(talepId)).data.isteyenId == request.auth.uid;
+        allow read: if girisli() && (
+          talep().isteyenId == request.auth.uid
+          || (talep().sahipId == request.auth.uid && talep().durum in ['kabul', 'kargoda', 'teslim'])
+        );
+      }
+    }
+  }
+}

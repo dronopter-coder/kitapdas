@@ -1,0 +1,88 @@
+# Kitapdaş 📚
+
+> **Okuduğun kitap, yeni okuruna yol alsın.**
+
+Kitapdaş, ikinci el kitap paylaşım uygulamasıdır. Kullanıcı rafındaki okunmuş kitabın fotoğrafını çekip adını ve yazarını girer; okumak isteyen bir başka kullanıcı kitabı ister; kitabın sahibi talebi onaylar ve kitabı **karşı ödemeli** kargoyla gönderir. Kitap ücretsizdir, alıcı yalnızca kargo ücretini öder.
+
+## Akış
+
+```
+Rafına ekle  →  İste (adres + not)  →  Kabul  →  Kargoya ver (firma + takip no)  →  Teslim aldım
+                         ↘ geri çek          ↘ reddet / vazgeç
+```
+
+- **Keşfet:** yeni gelenler, şehrindeki kitaplar, tüm raf, kategoriler.
+- **Ara:** kitap/yazar/tür araması, şehir ve kategori filtresi.
+- **+ (Kitap ekle):** fotoğraf çek / galeriden seç, ad, yazar, tür, durum (Yeni gibi / İyi / Okunmuş / Yıpranmış), not. Fotoğrafsız kitaplara otomatik özel kapak tasarlanır.
+- **Takas:** gelen talepler (kabul et, reddet, kargoya verdim) ve isteklerim (takip numarası, teslim aldım), 4 adımlı ilerleme çubuğu.
+- **Profil:** rafım, paylaştıklarım, istatistikler, unvan (Yeni Kitapdaş → Kitapdaş → Cömert Okur → Kitap Elçisi).
+- **Giriş:** Google ile tek dokunuş veya e-posta/şifre.
+- **Gizlilik:** teslimat adresi, kitap sahibi talebi **kabul edene kadar** ona gösterilmez (sunucu kuralıyla korunur).
+
+## Teknoloji
+
+- Capacitor 8 (Android + iOS), sade JavaScript, esbuild
+- Firebase: Authentication (Google + e-posta), Cloud Firestore, Cloud Storage
+- Yazı tipleri: Fraunces + Plus Jakarta Sans (OFL, uygulamaya gömülü), ikonlar: Lucide
+
+```
+./
+  src/            uygulama kodu (main.js, ekranlar/, veri/, stil.css)
+  www/index.html  kabuk — app.js / app.css derlemeyle üretilir
+  firebase/       Firestore ve Storage güvenlik kuralları
+  kaynak/         uygulama simgesi ve mağaza tanıtım görseli
+  yayin/          mağaza ekran görüntüleri
+  docs/           gizlilik politikası (GitHub Pages)
+  keystore/       sabit debug imza anahtarı (herkese açık, yalnızca test için)
+```
+
+## Demo modu
+
+Firebase ayarı yapılmadan derlenen APK **demo modunda** çalışır: bütün veriler telefonda tutulur, raflar örnek kitaplarla dolu gelir. Bir kitap istediğinde karşı taraf birkaç saniye sonra talebi kabul edip kargolar; böylece akışın tamamını hemen deneyebilirsin. Gerçek kullanıcılarla çalışması için aşağıdaki Firebase kurulumu gerekir.
+
+## APK alma
+
+1. Değişiklikler `main`e gönderilince **Actions > "Kitapdaş APK derle"** iş akışı çalışır (~6-8 dk).
+2. Çalıştırmanın altındaki **Kitapdas-APK** çıktısını indir, zip içindeki `app-debug.apk`yı telefona kur.
+
+## Firebase kurulumu (gerçek kullanım için, ~15 dk)
+
+1. [console.firebase.google.com](https://console.firebase.google.com) → **Proje ekle** → ad: `kitapdas`.
+2. **Authentication → Sign-in method:** *Google* ve *E-posta/Şifre* sağlayıcılarını etkinleştir.
+3. **Firestore Database → Veritabanı oluştur** (konum: `eur3` ya da `europe-west`), ardından **Kurallar** sekmesine `firebase/firestore.rules` içeriğini yapıştırıp **Yayınla**.
+4. **Storage → Başlayın**, ardından **Kurallar** sekmesine `firebase/storage.rules` içeriğini yapıştırıp **Yayınla**.
+5. **Proje ayarları → Uygulamalarınız → Android uygulaması ekle**
+   - Paket adı: `com.kitapdas.app`
+   - SHA-1 (depodaki sabit debug anahtarı): `F7:4E:76:A7:C3:62:64:B6:72:5A:CD:19:BB:3D:60:59:32:47:B9:8F`
+   - İndirilen `google-services.json` dosyasının **tüm içeriğini** GitHub'da *Settings → Secrets and variables → Actions → New repository secret* ile `KITAPDAS_GOOGLE_SERVICES_JSON` adıyla ekle.
+6. **Proje ayarları → Uygulamalarınız → Web uygulaması ekle** (`</>`), çıkan `firebaseConfig` nesnesini JSON olarak `KITAPDAS_FIREBASE_CONFIG` sırrına ekle. Örnek:
+   ```json
+   {"apiKey":"AIza...","authDomain":"kitapdas.firebaseapp.com","projectId":"kitapdas","storageBucket":"kitapdas.firebasestorage.app","messagingSenderId":"123","appId":"1:123:web:abc"}
+   ```
+   (Bu bilgiler gizli değildir; istersen `firebase-ayar.json` dosyası olarak da ekleyebilirsin.)
+7. Actions'tan iş akışını yeniden çalıştır. Yeni APK artık gerçek Firebase ile çalışır.
+
+> Play Store sürümü için Play Console'daki **uygulama imzalama anahtarının SHA-1**'ini de Firebase'deki Android uygulamasına eklemelisin; yoksa Google girişi mağaza sürümünde çalışmaz.
+
+## Yerelde geliştirme
+
+```bash
+
+npm install
+npm run dev          # src/ değiştikçe www/'yi yeniden derler
+npx serve www        # ya da: python3 -m http.server -d www
+```
+
+Tarayıcıda Google girişi açılır pencereyle (popup) çalışır; Firebase konsolunda *Authentication → Settings → Authorized domains* listesine `localhost` ekli olmalıdır.
+
+## Yol haritası (öneriler)
+
+- Talep geldiğinde / kargo çıktığında **anlık bildirim** (Firebase Cloud Messaging + Cloud Functions)
+- Takas sonrası karşılıklı **değerlendirme** ve güven puanı
+- Barkoddan (ISBN) kitap bilgisini otomatik doldurma
+- Uygulama içi mesajlaşma
+
+## Gizlilik politikası sayfası
+
+*Settings → Pages → Source: Deploy from a branch → `main` / `docs`* seçilince sayfa
+`https://dronopter-coder.github.io/kitapdas/gizlilik.html` adresinde yayınlanır.

@@ -1,0 +1,7 @@
+node_modules
+android
+ios
+www/app.js
+www/app.css
+www/fonts
+*.map
