@@ -15,7 +15,7 @@ export function profilEkrani(kok) {
     const verdim = benim.filter((k) => k.durum === 'verildi');
     const aldim = durum.giden.filter((t) => t.durum === 'teslim').length;
     const liste = filtre === 'rafta' ? rafta : verdim;
-    const unvan = verdim.length >= 10 ? 'Kitap Elçisi' : verdim.length >= 3 ? 'Cömert Okur' : benim.length ? 'Kitapdaş' : 'Yeni Kitapdaş';
+    const unvan = verdim.length >= 10 ? 'Kitap Elçisi' : verdim.length >= 3 ? 'Cömert Okur' : benim.length ? 'Okur' : 'Yeni Okur';
 
     kok.innerHTML = `
     <section class="profil-kahraman">
@@ -47,12 +47,12 @@ export function profilEkrani(kok) {
 
     <section class="ayar-liste">
       <button data-git="profil-duzenle">${ikon('kalem', 20)}<span>Profili düzenle</span>${ikon('sag', 18)}</button>
-      <button id="p-nasil">${ikon('soru', 20)}<span>Kitapdaş nasıl çalışır?</span>${ikon('sag', 18)}</button>
+      <button id="p-nasil">${ikon('soru', 20)}<span>Okudum nasıl çalışır?</span>${ikon('sag', 18)}</button>
       <button id="p-kurallar">${ikon('kalkan', 20)}<span>Topluluk kuralları</span>${ikon('sag', 18)}</button>
-      <a href="https://dronopter-coder.github.io/kitapdas/gizlilik.html" target="_blank" rel="noopener">${ikon('kilit', 20)}<span>Gizlilik politikası</span>${ikon('sag', 18)}</a>
+      <a href="https://dronopter-coder.github.io/okudum/gizlilik.html" target="_blank" rel="noopener">${ikon('kilit', 20)}<span>Gizlilik politikası</span>${ikon('sag', 18)}</a>
       <button id="p-cikis" class="tehlike">${ikon('cikis', 20)}<span>Çıkış yap</span></button>
     </section>
-    <p class="surum">Kitapdaş 1.0${demoMu ? ' · demo modu' : ''}<br/>${h(durum.kullanici.eposta || '')}</p>`;
+    <p class="surum">Okudum 1.0${demoMu ? ' · demo modu' : ''}<br/>${h(durum.kullanici.eposta || '')}</p>`;
 
     kok.querySelectorAll('[data-f]').forEach((b) => b.addEventListener('click', () => { filtre = b.dataset.f; ciz(); }));
     $('#p-nasil', kok).addEventListener('click', nasilCalisir);
@@ -69,7 +69,7 @@ export function profilEkrani(kok) {
 export function nasilCalisir() {
   const adim = (i, ik, b, m) => `<li><i class="nc-ikon">${ikon(ik, 22)}</i><div><b>${i}. ${b}</b><p>${m}</p></div></li>`;
   sayfaAc(`
-    <h3 class="sheet-baslik">Kitapdaş nasıl çalışır?</h3>
+    <h3 class="sheet-baslik">Okudum nasıl çalışır?</h3>
     <ol class="nasil-liste">
       ${adim(1, 'kamera', 'Rafını paylaş', 'Okuyup bitirdiğin kitabın fotoğrafını çek, adını ve yazarını yaz. Kitabın artık herkesin rafında.')}
       ${adim(2, 'kitap', 'İste', 'Okumak istediğin bir kitap gördüğünde teslimat adresinle birlikte talep gönder.')}

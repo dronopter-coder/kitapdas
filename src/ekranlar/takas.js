@@ -95,7 +95,7 @@ export function takasEkrani(kok, { sorgu }) {
       </div>
       <div class="talep-liste">
         ${aktif.length ? aktif.map((t) => kart(t, sekme)).join('') : sekme === 'gelen'
-    ? bosDurum('gelen', 'Henüz talep yok', 'Rafına kitap ekledikçe okurlar seni bulacak. Ne kadar çok kitap, o kadar çok kitapdaş!', '<button class="dugme ana" data-git="ekle">Kitap ekle</button>')
+    ? bosDurum('gelen', 'Henüz talep yok', 'Rafına kitap ekledikçe okurlar seni bulacak. Ne kadar çok kitap, o kadar çok okur!', '<button class="dugme ana" data-git="ekle">Kitap ekle</button>')
     : bosDurum('kitap', 'Henüz bir kitap istemedin', 'Rafları gez, gözüne kestirdiğin kitabı iste. Kitap ücretsiz, kargo karşı ödemeli.', '<button class="dugme ana" data-git="kesfet">Keşfet</button>')}
       </div>
       ${biten.length ? `<button class="arsiv-dugme" id="t-arsiv">${arsiv ? 'Geçmişi gizle' : `Geçmiş takaslar (${biten.length})`} ${ikon('sag', 16)}</button>

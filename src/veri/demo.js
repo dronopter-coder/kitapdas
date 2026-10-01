@@ -1,7 +1,7 @@
 // Demo arka ucu: Firebase ayarı yokken uygulamanın tamamı bu cihazda (localStorage) çalışır.
 // Firebase arka ucuyla aynı işlevleri sunar. Gerçekçi olsun diye talepler bir süre sonra
 // "karşı taraf" tarafından otomatik onaylanıp kargolanır.
-const ANAHTAR = 'kitapdas_demo_v1';
+const ANAHTAR = 'okudum_demo_v1';
 const BEN = 'demo-ben';
 
 const gun = 86400000;
@@ -95,7 +95,7 @@ function oturumAc(k) {
 
 export async function googleIleGiris() {
   await bekle(600);
-  oturumAc({ uid: BEN, ad: 'Kitapsever', eposta: 'demo@kitapdas.app', foto: '' });
+  oturumAc({ uid: BEN, ad: 'Kitapsever', eposta: 'demo@okudum.app', foto: '' });
 }
 export async function epostaKayit(ad, eposta, sifre) {
   if (sifre.length < 6) throw { code: 'auth/weak-password' };

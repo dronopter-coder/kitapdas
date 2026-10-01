@@ -39,7 +39,7 @@ export function kesfetEkrani(kok) {
     </div>
 
     ${!durum.kitaplarHazir ? `<div class="izgara">${iskelet(4)}</div>` : musait.length === 0
-    ? bosDurum('kitap', 'Raflar şimdilik boş', 'İlk kitabı sen paylaş, kitapdaşlık zinciri senden başlasın!', '<button class="dugme ana" data-git="ekle">Kitap ekle</button>')
+    ? bosDurum('kitap', 'Raflar şimdilik boş', 'İlk kitabı sen paylaş, okuma zinciri senden başlasın!', '<button class="dugme ana" data-git="ekle">Kitap ekle</button>')
     : `
     <section class="bolum">
       <div class="bolum-bas"><h2>Rafa yeni gelenler</h2><button class="baglanti" data-git="ara">Tümü</button></div>

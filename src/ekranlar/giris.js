@@ -21,12 +21,12 @@ export function girisEkrani(kok) {
     </div>
     <div class="karsilama-alt">
       ${logo('acik')}
-      <h1 class="karsilama-baslik">Okuduğun kitap,<br/><em>yeni okuruna</em> yol alsın.</h1>
-      <p class="karsilama-metin">Rafında bekleyen kitapları paylaş, merak ettiklerini iste. Kitap ücretsiz — kargo karşı ödemeli.</p>
+      <h1 class="karsilama-baslik">Okudum.<br/><em>Sen de oku.</em></h1>
+      <p class="karsilama-metin">Okuyup bitirdiğin kitabı yeni okuruna gönder, merak ettiğini iste. Kitap ücretsiz — kargo karşı ödemeli.</p>
       <button class="dugme google" id="g-google">${GOOGLE_LOGO}<span>Google ile devam et</span></button>
       <button class="dugme cam" id="g-eposta">${ikon('posta', 20)}<span>E-posta ile devam et</span></button>
       ${demoMu ? `<p class="demo-not">${ikon('parilti', 14)} Demo modu: veriler yalnızca bu cihazda tutulur.</p>` : ''}
-      <p class="yasal">Devam ederek <a href="https://dronopter-coder.github.io/kitapdas/gizlilik.html" target="_blank" rel="noopener">gizlilik politikasını</a> kabul etmiş olursun.</p>
+      <p class="yasal">Devam ederek <a href="https://dronopter-coder.github.io/okudum/gizlilik.html" target="_blank" rel="noopener">gizlilik politikasını</a> kabul etmiş olursun.</p>
     </div>
   </section>`;
 

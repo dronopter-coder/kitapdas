@@ -1,5 +1,5 @@
 rules_version = '2';
-// Kitapdaş — Firestore güvenlik kuralları
+// Okudum — Firestore güvenlik kuralları
 // Yükleme: Firebase konsolu > Firestore Database > Kurallar (Rules) sekmesine yapıştır > Yayınla
 service cloud.firestore {
   match /databases/{database}/documents {

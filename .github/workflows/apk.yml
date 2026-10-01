@@ -1,4 +1,4 @@
-name: Kitapdaş APK derle
+name: Okudum APK derle
 # Her push'ta (ya da elle) çalışır. Firebase sırları tanımlı değilse uygulama
 # DEMO MODUNDA derlenir (veriler yalnızca telefonda). Kurulum: README.md
 on:
@@ -6,10 +6,10 @@ on:
     branches: [main, 'claude/**']
   workflow_dispatch:
 env:
-  FIREBASE_CONFIG: ${{ secrets.KITAPDAS_FIREBASE_CONFIG }}
-  GOOGLE_SERVICES_JSON: ${{ secrets.KITAPDAS_GOOGLE_SERVICES_JSON }}
+  FIREBASE_CONFIG: ${{ secrets.OKUDUM_FIREBASE_CONFIG }}
+  GOOGLE_SERVICES_JSON: ${{ secrets.OKUDUM_GOOGLE_SERVICES_JSON }}
   KS_B64: ${{ secrets.KEYSTORE_BASE64 }}
-  ADMOB_APP_ID: ${{ secrets.KITAPDAS_ADMOB_APP_ID }}
+  ADMOB_APP_ID: ${{ secrets.OKUDUM_ADMOB_APP_ID }}
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -26,7 +26,7 @@ jobs:
       - name: Google girişi yoksa yerel eklentiyi çıkar
         if: ${{ env.GOOGLE_SERVICES_JSON == '' }}
         run: |
-          echo "KITAPDAS_GOOGLE_SERVICES_JSON tanımlı değil: yerel Google girişi eklentisi APK'ya eklenmeyecek."
+          echo "OKUDUM_GOOGLE_SERVICES_JSON tanımlı değil: yerel Google girişi eklentisi APK'ya eklenmeyecek."
           npm uninstall @capacitor-firebase/authentication --no-audit --no-fund
       - run: npx cap add android
       - name: Firebase (google-services.json) ve Google girişi
@@ -39,7 +39,7 @@ jobs:
           grep -n rgcfa android/variables.gradle
       - name: AdMob uygulama kimliği
         run: |
-          # AdMob > Uygulamalar'daki Android uygulama kimliği (gizli değildir; KITAPDAS_ADMOB_APP_ID sırrı varsa o kullanılır)
+          # AdMob > Uygulamalar'daki Android uygulama kimliği (gizli değildir; OKUDUM_ADMOB_APP_ID sırrı varsa o kullanılır)
           ID="${ADMOB_APP_ID:-ca-app-pub-3204109869365538~4707571112}"
           echo "AdMob uygulama kimliği: $ID"
           sed -i "s#</application>#<meta-data android:name=\"com.google.android.gms.ads.APPLICATION_ID\" android:value=\"$ID\"/></application>#" android/app/src/main/AndroidManifest.xml
@@ -85,7 +85,7 @@ jobs:
         run: chmod +x gradlew && ./gradlew assembleDebug bundleRelease
       - uses: actions/upload-artifact@v4
         with:
-          name: Kitapdas-APK
+          name: Okudum-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
       - name: AAB imzala (KEYSTORE_BASE64 sırrı tanımlıysa)
         if: ${{ env.KS_B64 != '' }}
@@ -100,5 +100,5 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: ${{ env.KS_B64 != '' }}
         with:
-          name: Kitapdas-AAB
+          name: Okudum-AAB
           path: android/app/build/outputs/bundle/release/app-release.aab

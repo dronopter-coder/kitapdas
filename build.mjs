@@ -1,4 +1,4 @@
-// Kitapdaş derleme betiği: src/ → www/ (esbuild).
+// Okudum derleme betiği: src/ → www/ (esbuild).
 // Firebase ayarı sırasıyla firebase-ayar.json dosyasından ya da FIREBASE_CONFIG ortam
 // değişkeninden okunur. İkisi de yoksa uygulama "demo modunda" (veriler yalnızca cihazda) çalışır.
 import * as esbuild from 'esbuild';

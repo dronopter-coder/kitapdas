@@ -1,6 +1,6 @@
 {
-  "appId": "com.kitapdas.app",
-  "appName": "Kitapdaş",
+  "appId": "com.okudum.app",
+  "appName": "Okudum",
   "webDir": "www",
   "backgroundColor": "#F7F1E6",
   "android": {

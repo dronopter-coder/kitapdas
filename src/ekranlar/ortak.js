@@ -9,7 +9,7 @@ export const LOGO_ISARET = `<svg class="logo-isaret" viewBox="0 0 48 48" aria-hi
 </svg>`;
 
 export function logo(ton = '') {
-  return `<div class="logo ${ton}">${LOGO_ISARET}<span>kitapda<b>ş</b></span></div>`;
+  return `<div class="logo ${ton}">${LOGO_ISARET}<span>okudu<b>m</b></span></div>`;
 }
 
 export function kitapKarti(k, { genis = false } = {}) {

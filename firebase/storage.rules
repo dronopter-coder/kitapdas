@@ -1,5 +1,5 @@
 rules_version = '2';
-// Kitapdaş — Storage güvenlik kuralları
+// Okudum — Storage güvenlik kuralları
 // Yükleme: Firebase konsolu > Storage > Kurallar (Rules) sekmesine yapıştır > Yayınla
 service firebase.storage {
   match /b/{bucket}/o {

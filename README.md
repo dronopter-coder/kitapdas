@@ -1,8 +1,8 @@
-# Kitapdaş 📚
+# Okudum 📚
 
-> **Okuduğun kitap, yeni okuruna yol alsın.**
+> **Sen de oku.**
 
-Kitapdaş, ikinci el kitap paylaşım uygulamasıdır. Kullanıcı rafındaki okunmuş kitabın fotoğrafını çekip adını ve yazarını girer; okumak isteyen bir başka kullanıcı kitabı ister; kitabın sahibi talebi onaylar ve kitabı **karşı ödemeli** kargoyla gönderir. Kitap ücretsizdir, alıcı yalnızca kargo ücretini öder.
+Okudum, ikinci el kitap paylaşım uygulamasıdır. Kullanıcı rafındaki okunmuş kitabın fotoğrafını çekip adını ve yazarını girer; okumak isteyen bir başka kullanıcı kitabı ister; kitabın sahibi talebi onaylar ve kitabı **karşı ödemeli** kargoyla gönderir. Kitap ücretsizdir, alıcı yalnızca kargo ücretini öder.
 
 ## Akış
 
@@ -15,7 +15,7 @@ Rafına ekle  →  İste (adres + not)  →  Kabul  →  Kargoya ver (firma + ta
 - **Ara:** kitap/yazar/tür araması, şehir ve kategori filtresi.
 - **+ (Kitap ekle):** fotoğraf çek / galeriden seç, ad, yazar, tür, durum (Yeni gibi / İyi / Okunmuş / Yıpranmış), not. Fotoğrafsız kitaplara otomatik özel kapak tasarlanır.
 - **Takas:** gelen talepler (kabul et, reddet, kargoya verdim) ve isteklerim (takip numarası, teslim aldım), 4 adımlı ilerleme çubuğu.
-- **Profil:** rafım, paylaştıklarım, istatistikler, unvan (Yeni Kitapdaş → Kitapdaş → Cömert Okur → Kitap Elçisi).
+- **Profil:** rafım, paylaştıklarım, istatistikler, unvan (Yeni Okur → Okur → Cömert Okur → Kitap Elçisi).
 - **Giriş:** Google ile tek dokunuş veya e-posta/şifre.
 - **Reklam:** AdMob banner ve geçiş reklamı (aşağıya bak).
 - **Gizlilik:** teslimat adresi, kitap sahibi talebi **kabul edene kadar** ona gösterilmez (sunucu kuralıyla korunur).
@@ -43,22 +43,22 @@ Firebase ayarı yapılmadan derlenen APK **demo modunda** çalışır: bütün v
 
 ## APK alma
 
-1. Değişiklikler `main`e gönderilince **Actions > "Kitapdaş APK derle"** iş akışı çalışır (~6-8 dk).
-2. Çalıştırmanın altındaki **Kitapdas-APK** çıktısını indir, zip içindeki `app-debug.apk`yı telefona kur.
+1. Değişiklikler `main`e gönderilince **Actions > "Okudum APK derle"** iş akışı çalışır (~6-8 dk).
+2. Çalıştırmanın altındaki **Okudum-APK** çıktısını indir, zip içindeki `app-debug.apk`yı telefona kur.
 
 ## Firebase kurulumu (gerçek kullanım için, ~15 dk)
 
-1. [console.firebase.google.com](https://console.firebase.google.com) → **Proje ekle** → ad: `kitapdas`.
+1. [console.firebase.google.com](https://console.firebase.google.com) → **Proje ekle** → ad: `okudum`.
 2. **Authentication → Sign-in method:** *Google* ve *E-posta/Şifre* sağlayıcılarını etkinleştir.
 3. **Firestore Database → Veritabanı oluştur** (konum: `eur3` ya da `europe-west`), ardından **Kurallar** sekmesine `firebase/firestore.rules` içeriğini yapıştırıp **Yayınla**.
 4. **Storage → Başlayın**, ardından **Kurallar** sekmesine `firebase/storage.rules` içeriğini yapıştırıp **Yayınla**.
 5. **Proje ayarları → Uygulamalarınız → Android uygulaması ekle**
-   - Paket adı: `com.kitapdas.app`
+   - Paket adı: `com.okudum.app`
    - SHA-1 (depodaki sabit debug anahtarı): `F7:4E:76:A7:C3:62:64:B6:72:5A:CD:19:BB:3D:60:59:32:47:B9:8F`
-   - İndirilen `google-services.json` dosyasının **tüm içeriğini** GitHub'da *Settings → Secrets and variables → Actions → New repository secret* ile `KITAPDAS_GOOGLE_SERVICES_JSON` adıyla ekle.
-6. **Proje ayarları → Uygulamalarınız → Web uygulaması ekle** (`</>`), çıkan `firebaseConfig` nesnesini JSON olarak `KITAPDAS_FIREBASE_CONFIG` sırrına ekle. Örnek:
+   - İndirilen `google-services.json` dosyasının **tüm içeriğini** GitHub'da *Settings → Secrets and variables → Actions → New repository secret* ile `OKUDUM_GOOGLE_SERVICES_JSON` adıyla ekle.
+6. **Proje ayarları → Uygulamalarınız → Web uygulaması ekle** (`</>`), çıkan `firebaseConfig` nesnesini JSON olarak `OKUDUM_FIREBASE_CONFIG` sırrına ekle. Örnek:
    ```json
-   {"apiKey":"AIza...","authDomain":"kitapdas.firebaseapp.com","projectId":"kitapdas","storageBucket":"kitapdas.firebasestorage.app","messagingSenderId":"123","appId":"1:123:web:abc"}
+   {"apiKey":"AIza...","authDomain":"okudum.firebaseapp.com","projectId":"okudum","storageBucket":"okudum.firebasestorage.app","messagingSenderId":"123","appId":"1:123:web:abc"}
    ```
    (Bu bilgiler gizli değildir; istersen `firebase-ayar.json` dosyası olarak da ekleyebilirsin.)
 7. Actions'tan iş akışını yeniden çalıştır. Yeni APK artık gerçek Firebase ile çalışır.
@@ -93,4 +93,4 @@ Tarayıcıda Google girişi açılır pencereyle (popup) çalışır; Firebase k
 ## Gizlilik politikası sayfası
 
 *Settings → Pages → Source: Deploy from a branch → `main` / `docs`* seçilince sayfa
-`https://dronopter-coder.github.io/kitapdas/gizlilik.html` adresinde yayınlanır.
+`https://dronopter-coder.github.io/okudum/gizlilik.html` adresinde yayınlanır.

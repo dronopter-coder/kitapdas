@@ -86,9 +86,9 @@ export function kitapEkrani(kok, { parca }) {
       } catch (e) { toast(hataMetni(e), 'hata'); }
     });
     $('#k-paylas', kok).addEventListener('click', async () => {
-      const metin = `"${k.ad}" (${k.yazar}) Kitapdaş'ta yeni okurunu bekliyor 📚`;
+      const metin = `"${k.ad}" (${k.yazar}) Okudum'da yeni okurunu bekliyor. Sen de oku! 📚`;
       try {
-        if (navigator.share) await navigator.share({ title: 'Kitapdaş', text: metin });
+        if (navigator.share) await navigator.share({ title: 'Okudum', text: metin });
         else { await navigator.clipboard.writeText(metin); toast('Panoya kopyalandı.', 'basari'); }
       } catch {}
     });
