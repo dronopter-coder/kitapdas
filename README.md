@@ -23,14 +23,14 @@ Rafına ekle  →  İste (adres + not)  →  Kabul  →  Kargoya ver (firma + ta
 ## Teknoloji
 
 - Capacitor 8 (Android + iOS), sade JavaScript, esbuild
-- Firebase: Authentication (Google + e-posta), Cloud Firestore, Cloud Storage
+- Firebase: Authentication (Google + e-posta) ve Cloud Firestore — ücretsiz Spark paketi yeter, kredi kartı gerekmez. Kitap fotoğrafları küçültülüp (≈560 px JPEG) doğrudan veritabanında saklanır.
 - Yazı tipleri: Fraunces + Plus Jakarta Sans (OFL, uygulamaya gömülü), ikonlar: Lucide
 
 ```
 ./
   src/            uygulama kodu (main.js, ekranlar/, veri/, stil.css)
   www/index.html  kabuk — app.js / app.css derlemeyle üretilir
-  firebase/       Firestore ve Storage güvenlik kuralları
+  firebase/       Firestore güvenlik kuralları
   kaynak/         uygulama simgesi ve mağaza tanıtım görseli
   yayin/          mağaza ekran görüntüleri
   docs/           gizlilik politikası (GitHub Pages)
@@ -51,17 +51,16 @@ Firebase ayarı yapılmadan derlenen APK **demo modunda** çalışır: bütün v
 1. [console.firebase.google.com](https://console.firebase.google.com) → **Proje ekle** → ad: `okudum`.
 2. **Authentication → Sign-in method:** *Google* ve *E-posta/Şifre* sağlayıcılarını etkinleştir. *Templates* sekmesinden doğrulama e-postasının gönderen adını `Okudum` yap (şablon dili uygulamada Türkçe seçilir).
 3. **Firestore Database → Veritabanı oluştur** (konum: `eur3` ya da `europe-west`), ardından **Kurallar** sekmesine `firebase/firestore.rules` içeriğini yapıştırıp **Yayınla**.
-4. **Storage → Başlayın**, ardından **Kurallar** sekmesine `firebase/storage.rules` içeriğini yapıştırıp **Yayınla**.
-5. **Proje ayarları → Uygulamalarınız → Android uygulaması ekle**
+4. **Proje ayarları → Uygulamalarınız → Android uygulaması ekle**
    - Paket adı: `com.okudum.app`
    - SHA-1 (depodaki sabit debug anahtarı): `F7:4E:76:A7:C3:62:64:B6:72:5A:CD:19:BB:3D:60:59:32:47:B9:8F`
    - İndirilen `google-services.json` dosyasının **tüm içeriğini** GitHub'da *Settings → Secrets and variables → Actions → New repository secret* ile `OKUDUM_GOOGLE_SERVICES_JSON` adıyla ekle.
-6. **Proje ayarları → Uygulamalarınız → Web uygulaması ekle** (`</>`), çıkan `firebaseConfig` nesnesini JSON olarak `OKUDUM_FIREBASE_CONFIG` sırrına ekle. Örnek:
+5. **Proje ayarları → Uygulamalarınız → Web uygulaması ekle** (`</>`), çıkan `firebaseConfig` nesnesini JSON olarak `OKUDUM_FIREBASE_CONFIG` sırrına ekle. Örnek:
    ```json
    {"apiKey":"AIza...","authDomain":"okudum.firebaseapp.com","projectId":"okudum","storageBucket":"okudum.firebasestorage.app","messagingSenderId":"123","appId":"1:123:web:abc"}
    ```
    (Bu bilgiler gizli değildir; istersen `firebase-ayar.json` dosyası olarak da ekleyebilirsin.)
-7. Actions'tan iş akışını yeniden çalıştır. Yeni APK artık gerçek Firebase ile çalışır.
+6. Actions'tan iş akışını yeniden çalıştır. Yeni APK artık gerçek Firebase ile çalışır.
 
 > Play Store sürümü için Play Console'daki **uygulama imzalama anahtarının SHA-1**'ini de Firebase'deki Android uygulamasına eklemelisin; yoksa Google girişi mağaza sürümünde çalışmaz.
 

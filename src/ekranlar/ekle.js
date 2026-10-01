@@ -82,7 +82,7 @@ export function ekleEkrani(kok) {
         });
       }
       if (!yol) return;
-      foto = await fotoKucult(yol, 1200, 0.82);
+      foto = await fotoKucult(yol, 560, 0.75); // veritabanına sığacak boyut
       onizle();
       titret();
     } catch (e) {

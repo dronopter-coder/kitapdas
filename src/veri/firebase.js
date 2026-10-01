@@ -1,5 +1,5 @@
-// Firebase arka ucu: Authentication (Google + e-posta), Firestore (veri), Storage (kitap fotoğrafları).
-// Kurallar: ../../firebase/firestore.rules ve storage.rules
+// Firebase arka ucu: Authentication (Google + e-posta) ve Firestore (veri + küçültülmüş kitap fotoğrafları).
+// Ücretsiz Spark paketinde kalmak için Cloud Storage kullanılmaz. Kurallar: ../../firebase/firestore.rules
 import { initializeApp } from 'firebase/app';
 import {
   initializeAuth, getAuth, indexedDBLocalPersistence, onIdTokenChanged, GoogleAuthProvider,
@@ -10,11 +10,10 @@ import {
   initializeFirestore, persistentLocalCache, collection, doc, getDoc, setDoc, deleteDoc,
   onSnapshot, query, where, orderBy, limit, writeBatch,
 } from 'firebase/firestore';
-import { getStorage, ref, uploadString, getDownloadURL, deleteObject } from 'firebase/storage';
 import { Capacitor } from '@capacitor/core';
 import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 
-let auth, db, depo;
+let auth, db;
 
 export function baslat(ayar) {
   const app = initializeApp(ayar);
@@ -22,7 +21,6 @@ export function baslat(ayar) {
     ? initializeAuth(app, { persistence: indexedDBLocalPersistence })
     : getAuth(app);
   db = initializeFirestore(app, { localCache: persistentLocalCache() });
-  depo = getStorage(app);
   auth.languageCode = 'tr'; // doğrulama ve şifre sıfırlama e-postaları Türkçe gelsin
 }
 
@@ -97,24 +95,16 @@ export const adresimiKaydet = (uid, adres) => setDoc(doc(db, 'kullanicilar', uid
 const listele = (s) => s.docs.map((d) => ({ id: d.id, ...d.data() }));
 
 export function kitaplariDinle(cb, hata) {
-  const q = query(collection(db, 'kitaplar'), orderBy('olusturma', 'desc'), limit(400));
+  const q = query(collection(db, 'kitaplar'), orderBy('olusturma', 'desc'), limit(250));
   return onSnapshot(q, (s) => cb(listele(s)), hata);
 }
 
 export async function kitapEkle(kullanici, profil, veri, fotoDataUrl) {
   const kitapRef = doc(collection(db, 'kitaplar'));
-  let foto = '';
-  let fotoYol = '';
-  if (fotoDataUrl) {
-    fotoYol = `kitaplar/${kullanici.uid}/${kitapRef.id}.jpg`;
-    const r = ref(depo, fotoYol);
-    await uploadString(r, fotoDataUrl, 'data_url', { contentType: 'image/jpeg' });
-    foto = await getDownloadURL(r);
-  }
+  // Fotoğraf, ekleme ekranında ~560 px JPEG'e küçültülür (≈40-80 KB) ve doğrudan belgeye yazılır.
   await setDoc(kitapRef, {
     ...veri,
-    foto,
-    fotoYol,
+    foto: fotoDataUrl || '',
     sahipId: kullanici.uid,
     sahipAd: profil.ad,
     sahipFoto: profil.foto || '',
@@ -127,7 +117,6 @@ export async function kitapEkle(kullanici, profil, veri, fotoDataUrl) {
 
 export async function kitapSil(kitap) {
   await deleteDoc(doc(db, 'kitaplar', kitap.id));
-  if (kitap.fotoYol) await deleteObject(ref(depo, kitap.fotoYol)).catch(() => {});
 }
 
 // ——— Talepler ———

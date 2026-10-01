@@ -30,7 +30,10 @@ service cloud.firestore {
         && request.resource.data.durum == 'musait'
         && metin(request.resource.data.ad, 120)
         && metin(request.resource.data.yazar, 80)
-        && metin(request.resource.data.aciklama, 500);
+        && metin(request.resource.data.aciklama, 500)
+        && (request.resource.data.foto == '' || (request.resource.data.foto is string
+            && request.resource.data.foto.matches('data:image/jpeg;base64,.*')
+            && request.resource.data.foto.size() < 300000));
       // Sahibi düzenleyebilir; sahiplik devredilemez.
       allow update: if ben(resource.data.sahipId)
         && request.resource.data.sahipId == resource.data.sahipId
