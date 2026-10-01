@@ -17,6 +17,7 @@ Rafına ekle  →  İste (adres + not)  →  Kabul  →  Kargoya ver (firma + ta
 - **Takas:** gelen talepler (kabul et, reddet, kargoya verdim) ve isteklerim (takip numarası, teslim aldım), 4 adımlı ilerleme çubuğu.
 - **Profil:** rafım, paylaştıklarım, istatistikler, unvan (Yeni Kitapdaş → Kitapdaş → Cömert Okur → Kitap Elçisi).
 - **Giriş:** Google ile tek dokunuş veya e-posta/şifre.
+- **Reklam:** AdMob banner ve geçiş reklamı (aşağıya bak).
 - **Gizlilik:** teslimat adresi, kitap sahibi talebi **kabul edene kadar** ona gösterilmez (sunucu kuralıyla korunur).
 
 ## Teknoloji
@@ -63,6 +64,16 @@ Firebase ayarı yapılmadan derlenen APK **demo modunda** çalışır: bütün v
 7. Actions'tan iş akışını yeniden çalıştır. Yeni APK artık gerçek Firebase ile çalışır.
 
 > Play Store sürümü için Play Console'daki **uygulama imzalama anahtarının SHA-1**'ini de Firebase'deki Android uygulamasına eklemelisin; yoksa Google girişi mağaza sürümünde çalışmaz.
+
+## AdMob reklamları
+
+- Ana sekmelerin (Keşfet, Ara, Takas, Profil) altında **banner**; kitap ekleme, talep gönderme ve kargoya verme sonrasında **geçiş reklamı** (her 3 işlemde bir, en sık 3 dakikada bir). Giriş, form ve kitap detay ekranlarında reklam yoktur.
+- AB/BK kullanıcıları için Google UMP onay penceresi gösterilir (*AdMob → Gizlilik ve mesajlaşma* bölümünde GDPR mesajı oluşturulmalı).
+- Şu an Google'ın **test** reklamları gösterilir. Gerçek reklam için:
+  1. AdMob'da *Uygulamalar → Uygulama ekle → Android* ile Kitapdaş'ı ekle, bir **Banner** ve bir **Geçiş reklamı** birimi oluştur.
+  2. `src/reklam.js` içindeki `REKLAM` bloğuna iki birim kimliğini yaz ve `test: false` yap.
+  3. Uygulama kimliğini (`ca-app-pub-…~…`) GitHub sırrı **`KITAPDAS_ADMOB_APP_ID`** olarak ekle.
+  > Nûr Vakti'nin reklam birimlerini burada kullanma: her uygulamanın kendi birimleri olmalı.
 
 ## Yerelde geliştirme
 

@@ -1,0 +1,82 @@
+// AdMob reklamları: alt banner + ara sıra geçiş (interstitial) reklamı.
+// Gerçek reklam birimlerini AdMob'da Kitapdaş için açınca aşağıdaki REKLAM bloğunu güncelle:
+// banner ve gecis kimliklerini yaz, test'i false yap. Uygulama kimliği (ca-app-pub-…~…) ise
+// GitHub sırrı KITAPDAS_ADMOB_APP_ID ile derlemeye verilir (bkz. README).
+import { Capacitor } from '@capacitor/core';
+import { AdMob, BannerAdPluginEvents, BannerAdPosition, BannerAdSize } from '@capacitor-community/admob';
+
+const PLATFORM = Capacitor.getPlatform();
+
+// Şimdilik Google'ın TEST reklam birimleri (gerçek gelir getirmez, hesabı riske atmaz).
+const REKLAM = {
+  test: true,
+  banner: PLATFORM === 'ios' ? 'ca-app-pub-3940256099942544/2934735716' : 'ca-app-pub-3940256099942544/6300978111',
+  gecis: PLATFORM === 'ios' ? 'ca-app-pub-3940256099942544/4411468910' : 'ca-app-pub-3940256099942544/1033173712',
+};
+
+const ETKIN = Capacitor.isNativePlatform() && Capacitor.isPluginAvailable('AdMob');
+let hazir = false;
+let bannerAcik = false;
+let bannerIstenen = false;
+let sonGecis = Date.now(); // açılıştan hemen sonra geçiş reklamı gösterme
+let eylemSayaci = 0;
+
+const yukseklikAyarla = (px) => document.documentElement.style.setProperty('--reklam-h', `${px}px`);
+
+export async function reklamlariBaslat() {
+  if (!ETKIN || hazir) return;
+  try {
+    if (PLATFORM === 'ios') {
+      try {
+        const t = await AdMob.trackingAuthorizationStatus();
+        if (t?.status === 'notDetermined') await AdMob.requestTrackingAuthorization();
+      } catch {}
+    }
+    // AB/BK kullanıcıları için Google UMP onay penceresi (mesaj AdMob > Gizlilik ve mesajlaşma'dan tanımlanır)
+    try {
+      let bilgi = await AdMob.requestConsentInfo();
+      if (bilgi?.status === 'REQUIRED' && bilgi.isConsentFormAvailable) bilgi = await AdMob.showConsentForm();
+      if (bilgi?.canRequestAds === false) return;
+    } catch {}
+    await AdMob.initialize({ initializeForTesting: REKLAM.test });
+    AdMob.addListener(BannerAdPluginEvents.SizeChanged, (b) => { if (bannerAcik) yukseklikAyarla(b?.height || 0); });
+    AdMob.addListener(BannerAdPluginEvents.FailedToLoad, () => yukseklikAyarla(0));
+    hazir = true;
+    if (bannerIstenen) bannerGoster(true);
+  } catch (e) {
+    console.warn('AdMob başlatılamadı', e);
+  }
+}
+
+// Banner yalnızca sekmeli ana ekranlarda görünür; giriş, form ve detay ekranlarında gizlenir.
+export async function bannerGoster(goster) {
+  bannerIstenen = goster;
+  if (!hazir || goster === bannerAcik) return;
+  bannerAcik = goster;
+  try {
+    if (goster) {
+      await AdMob.showBanner({
+        adId: REKLAM.banner, adSize: BannerAdSize.ADAPTIVE_BANNER, position: BannerAdPosition.BOTTOM_CENTER,
+        margin: 0, isTesting: REKLAM.test,
+      });
+    } else {
+      yukseklikAyarla(0);
+      await AdMob.removeBanner();
+    }
+  } catch {
+    bannerAcik = false;
+    yukseklikAyarla(0);
+  }
+}
+
+// Kullanıcıyı yormamak için: her 3. önemli işlemde ve en az 3 dakikada bir.
+export async function gecisReklami() {
+  if (!hazir) return;
+  eylemSayaci++;
+  if (eylemSayaci % 3 !== 0 || Date.now() - sonGecis < 3 * 60 * 1000) return;
+  sonGecis = Date.now();
+  try {
+    await AdMob.prepareInterstitial({ adId: REKLAM.gecis, isTesting: REKLAM.test });
+    await AdMob.showInterstitial();
+  } catch {}
+}

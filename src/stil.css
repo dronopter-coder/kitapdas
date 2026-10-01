@@ -34,6 +34,7 @@
   --alt: max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px));
   --sekme-h: 74px;
   --kenar: 20px;
+  --reklam-h: 0px; /* AdMob banner yüksekliği (reklam.js ayarlar) */
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -74,7 +75,7 @@ em { font-style: italic; }
   scrollbar-width: none;
 }
 .sahne::-webkit-scrollbar { display: none; }
-.sahne.sekmeli { padding-bottom: calc(var(--alt) + var(--sekme-h) + 40px); }
+.sahne.sekmeli { padding-bottom: calc(var(--alt) + var(--reklam-h) + var(--sekme-h) + 40px); }
 .giris-anim > * { animation: belir .42s cubic-bezier(.2, .8, .2, 1) both; }
 .giris-anim > *:nth-child(2) { animation-delay: .03s; }
 .giris-anim > *:nth-child(3) { animation-delay: .06s; }
@@ -460,7 +461,8 @@ em { font-style: italic; }
 
 /* ——— Sekme çubuğu ——— */
 #sekme {
-  position: fixed; z-index: 20; left: 50%; transform: translateX(-50%); bottom: calc(var(--alt) + 12px);
+  position: fixed; z-index: 20; left: 50%; transform: translateX(-50%); bottom: calc(var(--alt) + var(--reklam-h) + 12px);
+  transition: bottom .3s ease;
   width: calc(100% - 28px); max-width: 520px; height: var(--sekme-h); padding: 0 8px;
   display: grid; grid-template-columns: 1fr 1fr 76px 1fr 1fr; align-items: center;
   background: rgba(30, 34, 53, .94); backdrop-filter: blur(20px) saturate(1.4); -webkit-backdrop-filter: blur(20px) saturate(1.4);

@@ -9,6 +9,7 @@ env:
   FIREBASE_CONFIG: ${{ secrets.KITAPDAS_FIREBASE_CONFIG }}
   GOOGLE_SERVICES_JSON: ${{ secrets.KITAPDAS_GOOGLE_SERVICES_JSON }}
   KS_B64: ${{ secrets.KEYSTORE_BASE64 }}
+  ADMOB_APP_ID: ${{ secrets.KITAPDAS_ADMOB_APP_ID }}
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -36,6 +37,13 @@ jobs:
           # @capacitor-firebase/authentication: Google sağlayıcısını derlemeye dahil et
           sed -i 's/^ext {/ext {\n    rgcfaIncludeGoogle = true/' android/variables.gradle
           grep -n rgcfa android/variables.gradle
+      - name: AdMob uygulama kimliği
+        run: |
+          # Sır tanımlı değilse Google'ın test uygulama kimliği kullanılır (kimlik eksikse uygulama açılışta çöker).
+          ID="${ADMOB_APP_ID:-ca-app-pub-3940256099942544~3347511713}"
+          echo "AdMob uygulama kimliği: $ID"
+          sed -i "s#</application>#<meta-data android:name=\"com.google.android.gms.ads.APPLICATION_ID\" android:value=\"$ID\"/></application>#" android/app/src/main/AndroidManifest.xml
+          grep -c "gms.ads.APPLICATION_ID" android/app/src/main/AndroidManifest.xml
       - name: Simge, renkler ve sürüm
         run: |
           sed -i -E "s/versionCode[ =]+[0-9]+/versionCode ${{ github.run_number }}/" android/app/build.gradle

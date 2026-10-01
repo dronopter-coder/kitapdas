@@ -5,6 +5,7 @@ import { h, ikon, avatar, kapak, kapakRengi, $, sayfaAc, toast, hataMetni, yukle
 import { kondisyon, KITAP_DURUM, AKTIF_TALEP, ILLER } from '../sabitler.js';
 import { bosDurum, durumRozeti } from './ortak.js';
 import { git, geri } from '../yon.js';
+import { gecisReklami } from '../reklam.js';
 
 export function kitapEkrani(kok, { parca }) {
   const id = parca[0];
@@ -136,6 +137,7 @@ async function talepSayfasi(k) {
       titret('guclu');
       await s.kapat();
       basariSayfasi(k);
+      gecisReklami();
     } catch (err) {
       toast(hataMetni(err), 'hata');
       yukleniyor(b, false);

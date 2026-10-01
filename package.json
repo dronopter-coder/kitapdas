@@ -8,6 +8,7 @@
     "dev": "node build.mjs --watch"
   },
   "dependencies": {
+    "@capacitor-community/admob": "^8.1.0",
     "@capacitor-firebase/authentication": "^8.5.2",
     "@capacitor/android": "^8.0.0",
     "@capacitor/camera": "^8.1.0",

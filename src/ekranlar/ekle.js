@@ -7,6 +7,7 @@ import { h, ikon, $, $$, kapak, toast, hataMetni, yukleniyor, fotoKucult, titret
 import { KATEGORILER, KONDISYONLAR } from '../sabitler.js';
 import { ustBar } from './ortak.js';
 import { git } from '../yon.js';
+import { gecisReklami } from '../reklam.js';
 
 export function ekleEkrani(kok) {
   let foto = '';
@@ -127,6 +128,7 @@ export function ekleEkrani(kok) {
       titret('guclu');
       toast('Kitabın rafta! Yeni okurunu bekliyor.', 'basari');
       git(`kitap/${id}`, { degistir: true });
+      gecisReklami();
     } catch (err) {
       toast(hataMetni(err), 'hata');
       yukleniyor(b, false);

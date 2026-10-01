@@ -4,6 +4,7 @@ import { api } from './veri/index.js';
 import { durum, degisti, abone } from './durum.js';
 import { ikon, $, titret, toast, hataMetni } from './ui.js';
 import { git, geri, geriSayildi, rotalayiciAyarla } from './yon.js';
+import { reklamlariBaslat, bannerGoster } from './reklam.js';
 import { girisEkrani } from './ekranlar/giris.js';
 import { kesfetEkrani } from './ekranlar/kesfet.js';
 import { araEkrani } from './ekranlar/ara.js';
@@ -58,6 +59,7 @@ function rotala() {
   void sahne.offsetWidth;
   sekmeCiz(rota.sekme);
   durumCubugu(rota.koyu);
+  bannerGoster(!!rota.sekme);
 }
 
 function sekmeCiz(secili) {
@@ -135,6 +137,7 @@ function baslat() {
         toast(hataMetni(e), 'hata');
       }
       verileriDinle(k.uid);
+      reklamlariBaslat();
     } else {
       durum.profil = null;
     }

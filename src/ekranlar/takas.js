@@ -4,6 +4,7 @@ import { api } from '../veri/index.js';
 import { h, ikon, avatar, kapak, $, sayfaAc, toast, hataMetni, yukleniyor, onayla, titret, zamanOnce } from '../ui.js';
 import { TALEP_DURUM, KARGO_FIRMALARI } from '../sabitler.js';
 import { bosDurum, durumRozeti } from './ortak.js';
+import { gecisReklami } from '../reklam.js';
 
 const ADIMLAR = ['Talep', 'Onay', 'Kargo', 'Teslim'];
 
@@ -224,6 +225,7 @@ async function kargoSayfasi(t) {
       titret('guclu');
       await s.kapat();
       toast('Kitap yola çıktı! 🚚', 'basari');
+      gecisReklami();
     } catch (err) {
       toast(hataMetni(err), 'hata');
       yukleniyor(b, false);
