@@ -102,11 +102,16 @@ export function toast(mesaj, tur = 'bilgi') {
     el.id = 'toast';
     document.body.appendChild(el);
   }
+  clearTimeout(toastZaman);
+  el.hidden = false;
   el.className = `toast t-${tur}`;
   el.innerHTML = `${ikon(tur === 'hata' ? 'x' : tur === 'basari' ? 'tik' : 'bilgi', 18, 2.5)}<span>${h(mesaj)}</span>`;
-  requestAnimationFrame(() => el.classList.add('acik'));
-  clearTimeout(toastZaman);
-  toastZaman = setTimeout(() => el.classList.remove('acik'), 2800);
+  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('acik')));
+  toastZaman = setTimeout(() => {
+    el.classList.remove('acik');
+    // Kayma animasyonu bitince tamamen kaldır: bazı telefonlarda ekranın üstünde yarım kalmasın.
+    toastZaman = setTimeout(() => { el.hidden = true; }, 450);
+  }, 2800);
 }
 
 // ——— Alt sayfa (bottom sheet) ———

@@ -528,6 +528,7 @@ em { font-style: italic; }
   transform: translate(-50%, calc(-100% - var(--ust) - 40px)); opacity: 0; visibility: hidden; pointer-events: none;
   transition: transform .4s cubic-bezier(.3, 1.4, .5, 1), opacity .25s ease, visibility 0s linear .4s;
 }
+.toast[hidden] { display: none; }
 .toast.acik { transform: translate(-50%, 0); opacity: 1; visibility: visible; pointer-events: auto; transition: transform .4s cubic-bezier(.3, 1.4, .5, 1), opacity .2s ease, visibility 0s; }
 .toast .ikon { flex: none; width: 26px; height: 26px; padding: 4px; border-radius: 50%; background: rgba(255, 255, 255, .14); }
 .toast.t-basari .ikon { background: var(--zeytin); }
@@ -542,3 +543,13 @@ em { font-style: italic; }
 .dogrula > p { color: var(--murekkep-2); max-width: 34ch; }
 .dogrula > p b { color: var(--murekkep); word-break: break-all; }
 .dogrula .uyari-kutu { text-align: left; width: 100%; }
+
+/* ——— Kapaktan okuma ——— */
+.okuma-durum { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-radius: 14px; background: var(--kagit-2); color: var(--murekkep-2); font-size: 13.5px; font-weight: 600; }
+.okuma-durum[hidden] { display: none; }
+.okuma-durum .donen { width: 18px; height: 18px; border-width: 2.5px; flex: none; }
+.okuma-durum .ikon { flex: none; color: var(--murekkep-3); }
+.okuma-durum.tamam { background: var(--zeytin-acik); color: #24473A; }
+.okuma-durum.tamam .ikon { color: var(--zeytin); }
+.alan input.vurgu { animation: vurgu 1.4s ease; }
+@keyframes vurgu { 0%, 30% { box-shadow: inset 0 0 0 2px var(--zeytin), 0 0 0 5px var(--zeytin-acik); } }

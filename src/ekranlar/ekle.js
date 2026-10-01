@@ -8,6 +8,7 @@ import { KATEGORILER, KONDISYONLAR } from '../sabitler.js';
 import { ustBar } from './ortak.js';
 import { git } from '../yon.js';
 import { gecisReklami } from '../reklam.js';
+import { kapakOkunabilir, kapaktanOku } from '../kapakOku.js';
 
 export function ekleEkrani(kok) {
   let foto = '';
@@ -28,6 +29,7 @@ export function ekleEkrani(kok) {
           <button type="button" class="dugme ikincil" id="e-galeri">${ikon('resim', 18)}<span>Galeriden seç</span></button>
         </div>
         <input type="file" accept="image/*" id="e-dosya" hidden/>
+        <div id="e-okuma" class="okuma-durum" hidden></div>
       </div>
 
       <label class="alan"><span>Kitabın adı</span><input name="ad" maxlength="120" placeholder="Ör. Kürk Mantolu Madonna" required/></label>
@@ -65,13 +67,16 @@ export function ekleEkrani(kok) {
   const fotoAl = async (kaynak) => {
     try {
       let yol;
+      let dosya;
       if (Capacitor.isNativePlatform()) {
         if (kaynak === 'kamera') {
           const r = await Camera.takePhoto({ quality: 85, targetWidth: 1400, targetHeight: 1400, correctOrientation: true });
           yol = r.webPath;
+          dosya = r.uri;
         } else {
           const r = await Camera.chooseFromGallery({ limit: 1 });
           yol = r.results?.[0]?.webPath;
+          dosya = r.results?.[0]?.uri;
         }
       } else {
         yol = await new Promise((coz) => {
@@ -85,8 +90,41 @@ export function ekleEkrani(kok) {
       foto = await fotoKucult(yol, 560, 0.75); // veritabanına sığacak boyut
       onizle();
       titret();
+      if (dosya && kapakOkunabilir()) kapagiOku(dosya);
     } catch (e) {
       if (!/cancel/i.test(e?.message || '')) toast('Fotoğraf alınamadı: ' + (e?.message || ''), 'hata');
+    }
+  };
+
+  // Kapaktaki yazıdan adı ve yazarı doldur; kullanıcının kendi yazdığı alanlara dokunma.
+  const otomatik = { ad: '', yazar: '' };
+  const kapagiOku = async (dosya) => {
+    const durumEl = $('#e-okuma', kok);
+    durumEl.hidden = false;
+    durumEl.className = 'okuma-durum';
+    durumEl.innerHTML = `<span class="donen koyu"></span><span>Kapak okunuyor…</span>`;
+    try {
+      const sonuc = await kapaktanOku(dosya);
+      if (!durumEl.isConnected) return;
+      if (!sonuc?.ad) {
+        durumEl.innerHTML = `${ikon('bilgi', 18)}<span>Kapaktaki yazı okunamadı; adı ve yazarı elle yazabilirsin.</span>`;
+        return;
+      }
+      for (const alan of ['ad', 'yazar']) {
+        const giris = f[alan];
+        const deger = sonuc[alan];
+        if (deger && (!giris.value.trim() || giris.value === otomatik[alan])) {
+          giris.value = deger;
+          otomatik[alan] = deger;
+          giris.classList.remove('vurgu'); void giris.offsetWidth; giris.classList.add('vurgu');
+        }
+      }
+      onizle();
+      titret('orta');
+      durumEl.className = 'okuma-durum tamam';
+      durumEl.innerHTML = `${ikon('parilti', 18)}<span>${sonuc.kaynak === 'katalog' ? 'Kapaktan okundu ve kitap kataloğunda bulundu.' : 'Kapaktan okundu.'} Doğru olduğunu kontrol et.</span>`;
+    } catch (e) {
+      if (durumEl.isConnected) durumEl.innerHTML = `${ikon('bilgi', 18)}<span>Kapak okunamadı; adı ve yazarı elle yazabilirsin.</span>`;
     }
   };
 
