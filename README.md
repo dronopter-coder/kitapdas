@@ -16,7 +16,7 @@ Rafına ekle  →  İste (adres + not)  →  Kabul  →  Kargoya ver (firma + ta
 - **+ (Kitap ekle):** fotoğraf çek / galeriden seç, ad, yazar, tür, durum (Yeni gibi / İyi / Okunmuş / Yıpranmış), not. Fotoğrafsız kitaplara otomatik özel kapak tasarlanır.
 - **Takas:** gelen talepler (kabul et, reddet, kargoya verdim) ve isteklerim (takip numarası, teslim aldım), 4 adımlı ilerleme çubuğu.
 - **Profil:** rafım, paylaştıklarım, istatistikler, unvan (Yeni Okur → Okur → Cömert Okur → Kitap Elçisi).
-- **Giriş:** Google ile tek dokunuş veya e-posta/şifre.
+- **Giriş:** Google (her girişte telefondaki hesaplardan biri seçilir) veya e-posta/şifre. E-posta ile kaydolanlara **doğrulama bağlantısı** gönderilir; bağlantıya tıklamadan uygulamaya girilemez, sunucu kuralları da doğrulanmamış hesaplara veri vermez.
 - **Reklam:** AdMob banner ve geçiş reklamı (aşağıya bak).
 - **Gizlilik:** teslimat adresi, kitap sahibi talebi **kabul edene kadar** ona gösterilmez (sunucu kuralıyla korunur).
 
@@ -49,7 +49,7 @@ Firebase ayarı yapılmadan derlenen APK **demo modunda** çalışır: bütün v
 ## Firebase kurulumu (gerçek kullanım için, ~15 dk)
 
 1. [console.firebase.google.com](https://console.firebase.google.com) → **Proje ekle** → ad: `okudum`.
-2. **Authentication → Sign-in method:** *Google* ve *E-posta/Şifre* sağlayıcılarını etkinleştir.
+2. **Authentication → Sign-in method:** *Google* ve *E-posta/Şifre* sağlayıcılarını etkinleştir. *Templates* sekmesinden doğrulama e-postasının gönderen adını `Okudum` yap (şablon dili uygulamada Türkçe seçilir).
 3. **Firestore Database → Veritabanı oluştur** (konum: `eur3` ya da `europe-west`), ardından **Kurallar** sekmesine `firebase/firestore.rules` içeriğini yapıştırıp **Yayınla**.
 4. **Storage → Başlayın**, ardından **Kurallar** sekmesine `firebase/storage.rules` içeriğini yapıştırıp **Yayınla**.
 5. **Proje ayarları → Uygulamalarınız → Android uygulaması ekle**

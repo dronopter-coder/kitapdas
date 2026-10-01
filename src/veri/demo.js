@@ -1,8 +1,7 @@
 // Demo arka ucu: Firebase ayarı yokken uygulamanın tamamı bu cihazda (localStorage) çalışır.
 // Firebase arka ucuyla aynı işlevleri sunar. Gerçekçi olsun diye talepler bir süre sonra
 // "karşı taraf" tarafından otomatik onaylanıp kargolanır.
-const ANAHTAR = 'okudum_demo_v1';
-const BEN = 'demo-ben';
+const ANAHTAR = 'okudum_demo_v2';
 
 const gun = 86400000;
 const KISILER = {
@@ -46,7 +45,7 @@ function tohumla() {
     sahipAd: KISILER[kisi].ad, sahipFoto: '', sehir: KISILER[kisi].sehir, durum: 'musait',
     olusturma: simdi - i * gun * 0.7 - 3600000,
   }));
-  return { oturum: null, profiller: {}, adresler: {}, kitaplar, talepler: [], talepAdresleri: {} };
+  return { oturum: null, hesaplar: {}, profiller: {}, adresler: {}, kitaplar, talepler: [], talepAdresleri: {} };
 }
 function kaydet() {
   try { localStorage.setItem(ANAHTAR, JSON.stringify(veri)); } catch (e) { console.warn('Demo verisi kaydedilemedi', e); }
@@ -72,19 +71,21 @@ export function oturumuDinle(cb) {
 function oturumAc(k) {
   veri.oturum = k;
   // Yeni demo kullanıcının rafında bir kitap ve ona gelmiş bir talep olsun ki akış hemen görülsün.
-  if (!veri.kitaplar.some((x) => x.sahipId === BEN)) {
+  const kid = `kben-${k.uid}`;
+  const tid = `t-hosgeldin-${k.uid}`;
+  if (k.dogrulandi && !veri.kitaplar.some((x) => x.sahipId === k.uid)) {
     veri.kitaplar.push({
-      id: 'kben', ad: 'Aylak Adam', yazar: 'Yusuf Atılgan', kategori: 'Türk Klasikleri', kondisyon: 'iyi',
-      aciklama: 'Tek oturuşta okunacak bir kitap. Yeni okurunu bekliyor.', foto: '', sahipId: BEN,
+      id: kid, ad: 'Aylak Adam', yazar: 'Yusuf Atılgan', kategori: 'Türk Klasikleri', kondisyon: 'iyi',
+      aciklama: 'Tek oturuşta okunacak bir kitap. Yeni okurunu bekliyor.', foto: '', sahipId: k.uid,
       sahipAd: k.ad, sahipFoto: '', sehir: '', durum: 'musait', olusturma: Date.now() - gun * 2,
     });
     veri.talepler.push({
-      id: 't-hosgeldin', kitapId: 'kben', kitapAd: 'Aylak Adam', kitapYazar: 'Yusuf Atılgan', kitapFoto: '',
-      sahipId: BEN, sahipAd: k.ad, sahipFoto: '', isteyenId: 'u3', isteyenAd: KISILER.u3.ad, isteyenFoto: '',
+      id: tid, kitapId: kid, kitapAd: 'Aylak Adam', kitapYazar: 'Yusuf Atılgan', kitapFoto: '',
+      sahipId: k.uid, sahipAd: k.ad, sahipFoto: '', isteyenId: 'u3', isteyenAd: KISILER.u3.ad, isteyenFoto: '',
       isteyenSehir: KISILER.u3.sehir, not: 'Merhaba! Uzun zamandır okumak istiyordum, çok sevinirim 🙏',
       durum: 'bekliyor', kargo: null, olusturma: Date.now() - 3600000 * 5, guncelleme: Date.now() - 3600000 * 5,
     });
-    veri.talepAdresleri['t-hosgeldin'] = {
+    veri.talepAdresleri[tid] = {
       adSoyad: 'Zeynep Aksoy', telefon: '0555 123 45 67', il: 'İzmir', ilce: 'Karşıyaka',
       acikAdres: 'Bostanlı Mah. Cemal Gürsel Cad. No: 12 D: 4',
     };
@@ -93,21 +94,43 @@ function oturumAc(k) {
   dinleyiciler.oturum.forEach((cb) => cb(k));
 }
 
+// Demo hesapları cihazda tutulur: kayıtsız e-posta ya da yanlış şifreyle giriş yapılamaz.
+const anahtar = (eposta) => eposta.trim().toLocaleLowerCase('tr');
+const hesapKullanici = (eposta, h) => ({ uid: 'demo-' + anahtar(eposta), ad: h.ad, eposta: anahtar(eposta), foto: '', dogrulandi: h.dogrulandi });
+
 export async function googleIleGiris() {
   await bekle(600);
-  oturumAc({ uid: BEN, ad: 'Kitapsever', eposta: 'demo@okudum.app', foto: '' });
+  oturumAc({ uid: 'demo-google', ad: 'Kitapsever', eposta: 'demo@okudum.app', foto: '', dogrulandi: true });
 }
 export async function epostaKayit(ad, eposta, sifre) {
   if (sifre.length < 6) throw { code: 'auth/weak-password' };
   await bekle();
-  const k = { uid: BEN, ad, eposta, foto: '' };
+  veri.hesaplar ||= {};
+  if (veri.hesaplar[anahtar(eposta)]) throw { code: 'auth/email-already-in-use' };
+  const h = { ad, sifre, dogrulandi: false };
+  veri.hesaplar[anahtar(eposta)] = h;
+  const k = hesapKullanici(eposta, h);
   oturumAc(k);
   return k;
 }
 export async function epostaGiris(eposta, sifre) {
   if (!sifre) throw { code: 'auth/missing-password' };
   await bekle();
-  oturumAc({ uid: BEN, ad: veri.profiller[BEN]?.ad || eposta.split('@')[0], eposta, foto: '' });
+  const h = veri.hesaplar?.[anahtar(eposta)];
+  if (!h || h.sifre !== sifre) throw { code: 'auth/invalid-credential' };
+  oturumAc(hesapKullanici(eposta, h));
+}
+// Demo: gerçek e-posta gönderilmez; "Doğruladım" bağlantıya tıklanmış gibi davranır.
+export async function dogrulamaGonder() { await bekle(); }
+export async function dogrulamaKontrol() {
+  await bekle();
+  const k = veri.oturum;
+  if (!k) return null;
+  const h = veri.hesaplar?.[k.eposta];
+  if (h) h.dogrulandi = true;
+  const yeni = { ...k, dogrulandi: true };
+  oturumAc(yeni);
+  return yeni;
 }
 export async function sifreSifirla() { await bekle(); }
 export async function cikis() {

@@ -14,9 +14,11 @@ import { takasEkrani } from './ekranlar/takas.js';
 import { profilEkrani } from './ekranlar/profil.js';
 import { profilDuzenleEkrani } from './ekranlar/profilDuzenle.js';
 import { kisiEkrani } from './ekranlar/kisi.js';
+import { dogrulaEkrani } from './ekranlar/dogrula.js';
 
 const ROTALAR = {
   giris: { ekran: girisEkrani, acik: true, koyu: true },
+  dogrula: { ekran: dogrulaEkrani },
   kesfet: { ekran: kesfetEkrani, sekme: 'kesfet' },
   ara: { ekran: araEkrani, sekme: 'ara' },
   takas: { ekran: takasEkrani, sekme: 'takas' },
@@ -42,8 +44,11 @@ function rotala() {
   let { ad, parca, sorgu } = cozumle();
   if (!ROTALAR[ad]) ad = 'kesfet';
   if (!durum.kullanici && !ROTALAR[ad].acik) { ad = 'giris'; history.replaceState(null, '', '#/giris'); }
+  if (durum.kullanici && !durum.kullanici.dogrulandi) {
+    if (ad !== 'dogrula') { ad = 'dogrula'; history.replaceState(null, '', '#/dogrula'); }
+  } else if (ad === 'dogrula') { ad = durum.kullanici ? 'kesfet' : 'giris'; history.replaceState(null, '', `#/${ad}`); }
   if (durum.kullanici && ad === 'giris') { ad = 'kesfet'; history.replaceState(null, '', '#/kesfet'); }
-  if (durum.kullanici && !durum.profil?.sehir && ad !== 'profil-duzenle') {
+  if (durum.kullanici?.dogrulandi && !durum.profil?.sehir && ad !== 'profil-duzenle') {
     ad = 'profil-duzenle';
     sorgu = { ilk: '1' };
     history.replaceState(null, '', '#/profil-duzenle?ilk=1');
@@ -124,11 +129,18 @@ function baslat() {
     rotala();
   });
 
+  let onceki = null;
   api.oturumuDinle(async (k) => {
+    // Jeton yenilemeleri de haber verir; kullanıcı ve doğrulama durumu değişmediyse bir şey yapma.
+    const imza = k ? `${k.uid}|${k.dogrulandi}` : '';
+    if (imza === onceki) return;
+    onceki = imza;
     abonelikleriKapat();
     durum.kullanici = k;
     durum.kitaplar = []; durum.gelen = []; durum.giden = []; durum.kitaplarHazir = false;
-    if (k) {
+    if (k && !k.dogrulandi) {
+      durum.profil = null; // doğrulanana kadar veriye erişim yok
+    } else if (k) {
       try {
         durum.profil = (await api.profilGetir(k.uid)) || { ad: k.ad || k.eposta.split('@')[0], foto: k.foto || '', sehir: '' };
         if (!durum.profil.foto && k.foto) durum.profil.foto = k.foto;

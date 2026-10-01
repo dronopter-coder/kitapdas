@@ -2,9 +2,9 @@
 // Kurallar: ../../firebase/firestore.rules ve storage.rules
 import { initializeApp } from 'firebase/app';
 import {
-  initializeAuth, getAuth, indexedDBLocalPersistence, onAuthStateChanged, GoogleAuthProvider,
+  initializeAuth, getAuth, indexedDBLocalPersistence, onIdTokenChanged, GoogleAuthProvider,
   signInWithCredential, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-  sendPasswordResetEmail, updateProfile, signOut,
+  sendPasswordResetEmail, sendEmailVerification, updateProfile, signOut, reload,
 } from 'firebase/auth';
 import {
   initializeFirestore, persistentLocalCache, collection, doc, getDoc, setDoc, deleteDoc,
@@ -23,32 +23,57 @@ export function baslat(ayar) {
     : getAuth(app);
   db = initializeFirestore(app, { localCache: persistentLocalCache() });
   depo = getStorage(app);
+  auth.languageCode = 'tr'; // doğrulama ve şifre sıfırlama e-postaları Türkçe gelsin
 }
 
-const kullaniciDonustur = (u) => u && { uid: u.uid, ad: u.displayName || '', eposta: u.email || '', foto: u.photoURL || '' };
+// Google ile girenlerin e-postası Google tarafından doğrulanmıştır; e-posta ile kaydolanlar bağlantıya tıklamalıdır.
+const kullaniciDonustur = (u) => u && {
+  uid: u.uid, ad: u.displayName || '', eposta: u.email || '', foto: u.photoURL || '',
+  dogrulandi: u.emailVerified || u.providerData.some((p) => p.providerId === 'google.com'),
+};
 
 export function oturumuDinle(cb) {
-  return onAuthStateChanged(auth, (u) => cb(kullaniciDonustur(u)));
+  // onIdTokenChanged: e-posta doğrulandıktan sonra jeton yenilenince de haber verir.
+  return onIdTokenChanged(auth, (u) => cb(kullaniciDonustur(u)));
 }
 
 export async function googleIleGiris() {
   if (Capacitor.isNativePlatform()) {
     // Yerel Google hesap seçici → kimlik jetonu → web SDK oturumu
-    const s = await FirebaseAuthentication.signInWithGoogle();
+    // Klasik Google hesap seçici: telefondaki hesaplar listelenir, kullanıcı hangisiyle gireceğini seçer.
+    await FirebaseAuthentication.signOut().catch(() => {});
+    const s = await FirebaseAuthentication.signInWithGoogle({
+      useCredentialManager: false,
+      customParameters: [{ key: 'prompt', value: 'select_account' }],
+    });
     const kimlik = GoogleAuthProvider.credential(s.credential?.idToken, s.credential?.accessToken);
     await signInWithCredential(auth, kimlik);
   } else {
-    await signInWithPopup(auth, new GoogleAuthProvider());
+    const saglayici = new GoogleAuthProvider();
+    saglayici.setCustomParameters({ prompt: 'select_account' }); // her seferinde hesap seçtir
+    await signInWithPopup(auth, saglayici);
   }
 }
 
 export async function epostaKayit(ad, eposta, sifre) {
   const s = await createUserWithEmailAndPassword(auth, eposta, sifre);
   await updateProfile(s.user, { displayName: ad });
-  return kullaniciDonustur({ ...s.user, displayName: ad });
+  await sendEmailVerification(s.user);
+  return kullaniciDonustur(s.user);
 }
 export const epostaGiris = (eposta, sifre) => signInWithEmailAndPassword(auth, eposta, sifre);
 export const sifreSifirla = (eposta) => sendPasswordResetEmail(auth, eposta);
+export const dogrulamaGonder = () => sendEmailVerification(auth.currentUser);
+
+// Bağlantıya tıklanıp tıklanmadığını sunucudan sorar; doğrulandıysa jetonu yeniler (kurallar email_verified ister).
+export async function dogrulamaKontrol() {
+  const u = auth.currentUser;
+  if (!u) return null;
+  await reload(u);
+  if (u.emailVerified) await u.getIdToken(true);
+  return kullaniciDonustur(u);
+}
+
 export async function cikis() {
   if (Capacitor.isNativePlatform()) await FirebaseAuthentication.signOut().catch(() => {});
   await signOut(auth);

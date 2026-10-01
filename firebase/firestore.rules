@@ -4,7 +4,8 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    function girisli() { return request.auth != null; }
+    // E-posta ile kaydolanlar doğrulama bağlantısına tıklamadan veriye erişemez (Google hesapları zaten doğrulanmıştır).
+    function girisli() { return request.auth != null && request.auth.token.email_verified == true; }
     function ben(uid) { return girisli() && request.auth.uid == uid; }
     function degisen() { return request.resource.data.diff(resource.data).affectedKeys(); }
     function metin(v, en) { return v is string && v.size() <= en; }
