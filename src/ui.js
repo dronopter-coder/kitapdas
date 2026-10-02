@@ -3,7 +3,7 @@ import {
   House, Search, Plus, ArrowLeftRight, User, ArrowLeft, Camera, Image, MapPin, Truck, Check, X,
   Package, BookOpen, Heart, Trash2, LogOut, ChevronRight, Send, Inbox, Copy, Info, Pencil,
   ShieldCheck, Sparkles, Mail, Lock, Eye, EyeOff, PackageCheck, CircleHelp, HandHeart, Undo2,
-  BookMarked, SlidersHorizontal, Clock, Library,
+  BookMarked, SlidersHorizontal, Clock, Library, Map as HaritaIkon, MapPinned, Route, LocateFixed, Minus, Flag, TrendingUp,
 } from 'lucide';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { Capacitor } from '@capacitor/core';
@@ -15,6 +15,7 @@ const IKONLAR = {
   gelen: Inbox, kopya: Copy, bilgi: Info, kalem: Pencil, kalkan: ShieldCheck, parilti: Sparkles,
   posta: Mail, kilit: Lock, goz: Eye, gozKapali: EyeOff, teslim: PackageCheck, soru: CircleHelp,
   el: HandHeart, geriAl: Undo2, raf: BookMarked, filtre: SlidersHorizontal, saat: Clock, kutuphane: Library,
+  harita: HaritaIkon, pin: MapPinned, rota: Route, merkez: LocateFixed, eksi: Minus, bayrak: Flag, yukselis: TrendingUp,
 };
 
 export function ikon(ad, boyut = 22, kalinlik = 2) {

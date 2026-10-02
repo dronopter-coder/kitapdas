@@ -15,12 +15,16 @@ import { profilEkrani } from './ekranlar/profil.js';
 import { profilDuzenleEkrani } from './ekranlar/profilDuzenle.js';
 import { kisiEkrani } from './ekranlar/kisi.js';
 import { dogrulaEkrani } from './ekranlar/dogrula.js';
+import { haritaEkrani } from './ekranlar/harita.js';
+import { yolculuklarEkrani } from './ekranlar/yolculuklar.js';
 
 const ROTALAR = {
   giris: { ekran: girisEkrani, acik: true, koyu: true },
   dogrula: { ekran: dogrulaEkrani },
   kesfet: { ekran: kesfetEkrani, sekme: 'kesfet' },
-  ara: { ekran: araEkrani, sekme: 'ara' },
+  ara: { ekran: araEkrani },
+  harita: { ekran: haritaEkrani, sekme: 'harita', tamEkran: true },
+  yolculuklar: { ekran: yolculuklarEkrani },
   takas: { ekran: takasEkrani, sekme: 'takas' },
   profil: { ekran: profilEkrani, sekme: 'profil' },
   kitap: { ekran: kitapEkrani },
@@ -32,6 +36,7 @@ const ROTALAR = {
 let aktif = null; // { ad, ekran örneği }
 let kitapAboneligi = null;
 let talepAboneligi = null;
+let yolculukAboneligi = null;
 
 function cozumle() {
   const [yol, sorgu = ''] = location.hash.replace(/^#\/?/, '').split('?');
@@ -57,7 +62,7 @@ function rotala() {
   const rota = ROTALAR[ad];
   aktif?.ornek?.temizle?.();
   const sahne = $('#sahne');
-  sahne.className = 'sahne giris-anim' + (rota.sekme ? ' sekmeli' : '');
+  sahne.className = 'sahne giris-anim' + (rota.sekme ? ' sekmeli' : '') + (rota.tamEkran ? ' tam-ekran' : '');
   sahne.scrollTop = 0;
   sahne.innerHTML = '';
   aktif = { ad, ornek: rota.ekran(sahne, { parca, sorgu }) || {} };
@@ -77,7 +82,7 @@ function sekmeCiz(secili) {
       <span class="sekme-ikon">${ikon(ik, 22, secili === id ? 2.4 : 1.9)}${rozet ? `<i class="rozet">${rozet}</i>` : ''}</span><span>${ad}</span></button>`;
   nav.innerHTML = `
     ${s('kesfet', 'ev', 'Keşfet')}
-    ${s('ara', 'ara', 'Ara')}
+    ${s('harita', 'harita', 'Harita')}
     <button class="sekme-fab" data-git="ekle" aria-label="Kitap ekle">${ikon('arti', 28, 2.6)}</button>
     ${s('takas', 'takas', 'Takas', bekleyen)}
     ${s('profil', 'kisi', 'Profil')}`;
@@ -91,6 +96,7 @@ function durumCubugu(koyu) {
 function abonelikleriKapat() {
   kitapAboneligi?.(); kitapAboneligi = null;
   talepAboneligi?.(); talepAboneligi = null;
+  yolculukAboneligi?.(); yolculukAboneligi = null;
 }
 
 function verileriDinle(uid) {
@@ -100,6 +106,10 @@ function verileriDinle(uid) {
     durum.kitaplarHazir = true;
     degisti('kitaplar');
   }, hata);
+  yolculukAboneligi = api.yolculuklariDinle((liste) => {
+    durum.yolculuklar = liste;
+    degisti('yolculuklar');
+  }, () => {});
   talepAboneligi = api.talepleriDinle(uid, ({ gelen, giden }) => {
     const sirala = (a, b) => b.guncelleme - a.guncelleme;
     durum.gelen = gelen.sort(sirala);
@@ -137,7 +147,7 @@ function baslat() {
     onceki = imza;
     abonelikleriKapat();
     durum.kullanici = k;
-    durum.kitaplar = []; durum.gelen = []; durum.giden = []; durum.kitaplarHazir = false;
+    durum.kitaplar = []; durum.gelen = []; durum.giden = []; durum.yolculuklar = []; durum.kitaplarHazir = false;
     if (k && !k.dogrulandi) {
       durum.profil = null; // doğrulanana kadar veriye erişim yok
     } else if (k) {

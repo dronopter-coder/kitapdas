@@ -100,6 +100,8 @@ export function enIyiEslesme(kayitlar, kapakMetni) {
 
 // path: Camera eklentisinin verdiği dosya adresi (uri)
 export async function kapaktanOku(path) {
+  // Kamera eklentisi düz dosya yolu (/data/...) verir; ML Kit ise file:// ya da content:// adresi bekler.
+  if (path.startsWith('/')) path = 'file://' + path;
   const sonuc = await TextRecognition.processImage({ path });
   const satirlar = [];
   for (const b of sonuc.blocks || []) {

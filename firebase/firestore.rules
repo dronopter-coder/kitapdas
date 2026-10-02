@@ -85,5 +85,20 @@ service cloud.firestore {
         );
       }
     }
+
+    // ——— Yolculuklar (Haftanın yolculukları) ———
+    // Kişi bilgisi yok: kitap, nereden → nereye, tarih. Kargoya veren kitap sahibi açar; alıcı "teslim" işaretler.
+    match /yolculuklar/{talepId} {
+      allow read: if girisli();
+      allow create: if ben(request.resource.data.sahipId)
+        && get(/databases/$(database)/documents/talepler/$(talepId)).data.sahipId == request.auth.uid
+        && get(/databases/$(database)/documents/talepler/$(talepId)).data.isteyenId == request.resource.data.isteyenId
+        && request.resource.data.teslim == false
+        && metin(request.resource.data.nereden, 30)
+        && metin(request.resource.data.nereye, 30);
+      allow update: if ben(resource.data.isteyenId)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['teslim', 'teslimTarih'])
+        && request.resource.data.teslim == true;
+    }
   }
 }

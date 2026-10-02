@@ -14,6 +14,8 @@ Rafına ekle  →  İste (adres + not)  →  Kabul  →  Kargoya ver (firma + ta
 - **Keşfet:** yeni gelenler, şehrindeki kitaplar, tüm raf, kategoriler.
 - **Ara:** kitap/yazar/tür araması, şehir ve kategori filtresi.
 - **+ (Kitap ekle):** fotoğraf çek / galeriden seç (kapaktaki **ad ve yazar otomatik okunur**: ML Kit ile telefonda yazı tanıma + Google Books'ta doğrulama; bulunamazsa en büyük punto ad, kişi adına benzeyen satır yazar sayılır), ad, yazar, tür, durum (Yeni gibi / İyi / Okunmuş / Yıpranmış), not. Fotoğrafsız kitaplara otomatik özel kapak tasarlanır.
+- **Harita:** illere göre kitap yoğunluğu (renk + sayı balonları). Bir şehre dokununca yakınlaşır, kitaplar baloncuklar halinde açılır; altta şehrin rafı ve "en dolu raflar" sıralaması. Çevrimdışı SVG harita (il sınırları: turkey-map-react, MIT).
+- **Haftanın yolculukları:** son 7 günde kargoya verilen kitapların şehirden şehre animasyonlu rotaları, toplam km, en uzun yolculuk, en cömert şehir ve yolculuk günlüğü. Kayıtlar kişi bilgisi içermez (yalnızca kitap ve şehirler).
 - **Takas:** gelen talepler (kabul et, reddet, kargoya verdim) ve isteklerim (takip numarası, teslim aldım), 4 adımlı ilerleme çubuğu.
 - **Profil:** rafım, paylaştıklarım, istatistikler, unvan (Yeni Okur → Okur → Cömert Okur → Kitap Elçisi).
 - **Giriş:** Google (her girişte telefondaki hesaplardan biri seçilir) veya e-posta/şifre. E-posta ile kaydolanlara **doğrulama bağlantısı** gönderilir; bağlantıya tıklamadan uygulamaya girilemez, sunucu kuralları da doğrulanmamış hesaplara veri vermez.

@@ -7,7 +7,7 @@ import {
   sendPasswordResetEmail, sendEmailVerification, updateProfile, signOut, reload,
 } from 'firebase/auth';
 import {
-  initializeFirestore, persistentLocalCache, collection, doc, getDoc, setDoc, deleteDoc,
+  initializeFirestore, persistentLocalCache, collection, doc, getDoc, setDoc, updateDoc, deleteDoc,
   onSnapshot, query, where, orderBy, limit, writeBatch,
 } from 'firebase/firestore';
 import { Capacitor } from '@capacitor/core';
@@ -182,10 +182,28 @@ export async function talepGeriCek(talep) {
   await b.commit();
 }
 
-export async function kargola(talep, firma, takipNo) {
+// nereden: kitap sahibinin şehri. Kargoya verilince herkese açık, kişi bilgisi içermeyen bir "yolculuk" kaydı açılır
+// (Haftanın yolculukları bölümü bunları gösterir).
+export async function kargola(talep, firma, takipNo, nereden) {
   const b = writeBatch(db);
   b.update(talepRef(talep.id), { durum: 'kargoda', kargo: { firma, takipNo }, guncelleme: Date.now() });
   b.update(kitapRef(talep.kitapId), { durum: 'verildi' });
+  if (nereden && talep.isteyenSehir) {
+    b.set(doc(db, 'yolculuklar', talep.id), {
+      kitapId: talep.kitapId, kitapAd: talep.kitapAd, kitapYazar: talep.kitapYazar || '', kitapFoto: talep.kitapFoto || '',
+      nereden, nereye: talep.isteyenSehir, sahipId: talep.sahipId, isteyenId: talep.isteyenId,
+      tarih: Date.now(), teslim: false,
+    });
+  }
   await b.commit();
 }
-export const teslimAldim = (talep) => writeBatch(db).update(talepRef(talep.id), { durum: 'teslim', guncelleme: Date.now() }).commit();
+export async function teslimAldim(talep) {
+  await writeBatch(db).update(talepRef(talep.id), { durum: 'teslim', guncelleme: Date.now() }).commit();
+  // Eski talepler için yolculuk kaydı olmayabilir; yoksa sessizce geç.
+  await updateDoc(doc(db, 'yolculuklar', talep.id), { teslim: true, teslimTarih: Date.now() }).catch(() => {});
+}
+
+export function yolculuklariDinle(cb, hata) {
+  const q = query(collection(db, 'yolculuklar'), orderBy('tarih', 'desc'), limit(80));
+  return onSnapshot(q, (s) => cb(listele(s)), hata);
+}

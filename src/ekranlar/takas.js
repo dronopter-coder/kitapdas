@@ -221,7 +221,7 @@ async function kargoSayfasi(t) {
     const b = $('button[type=submit]', f);
     yukleniyor(b, true);
     try {
-      await api.kargola(t, firma, takip);
+      await api.kargola(t, firma, takip, durum.profil?.sehir || '');
       titret('guclu');
       await s.kapat();
       toast('Kitap yola çıktı! 🚚', 'basari');

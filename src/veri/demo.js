@@ -1,7 +1,7 @@
 // Demo arka ucu: Firebase ayarı yokken uygulamanın tamamı bu cihazda (localStorage) çalışır.
 // Firebase arka ucuyla aynı işlevleri sunar. Gerçekçi olsun diye talepler bir süre sonra
 // "karşı taraf" tarafından otomatik onaylanıp kargolanır.
-const ANAHTAR = 'okudum_demo_v2';
+const ANAHTAR = 'okudum_demo_v3';
 
 const gun = 86400000;
 const KISILER = {
@@ -29,7 +29,7 @@ const TOHUM = [
 ];
 
 let veri = yukle();
-const dinleyiciler = { oturum: new Set(), kitap: new Set(), talep: new Set() };
+const dinleyiciler = { oturum: new Set(), kitap: new Set(), talep: new Set(), yolculuk: new Set() };
 
 function yukle() {
   try {
@@ -45,7 +45,31 @@ function tohumla() {
     sahipAd: KISILER[kisi].ad, sahipFoto: '', sehir: KISILER[kisi].sehir, durum: 'musait',
     olusturma: simdi - i * gun * 0.7 - 3600000,
   }));
-  return { oturum: null, hesaplar: {}, profiller: {}, adresler: {}, kitaplar, talepler: [], talepAdresleri: {} };
+  // Haritada daha çok şehir dolu görünsün diye ek demo kitapları ve geçen haftanın yolculukları
+  const EK = [
+    ['Beyaz Zambaklar Ülkesinde', 'Grigoriy Petrov', 'Antalya'], ['Martı', 'Richard Bach', 'Trabzon'], ['Yaban', 'Yakup Kadri Karaosmanoğlu', 'Konya'],
+    ['Dönüşüm', 'Franz Kafka', 'Eskişehir'], ['Satranç', 'Stefan Zweig', 'Kayseri'], ['Fareler ve İnsanlar', 'John Steinbeck', 'Diyarbakır'],
+    ['Kuyucaklı Yusuf', 'Sabahattin Ali', 'Aydın'], ['Huzur', 'Ahmet Hamdi Tanpınar', 'İstanbul'], ['Puslu Kıtalar Atlası', 'İhsan Oktay Anar', 'İzmir'],
+    ['Şeker Portakalı', 'José Mauro de Vasconcelos', 'Samsun'], ['Uçurtma Avcısı', 'Khaled Hosseini', 'Van'], ['Kayıp Tanrılar Ülkesi', 'Ahmet Ümit', 'Gaziantep'],
+    ['Hayvan Çiftliği', 'George Orwell', 'Ankara'], ['Bir İdam Mahkumunun Son Günü', 'Victor Hugo', 'Mersin'], ['Seksen Günde Devri Alem', 'Jules Verne', 'Erzurum'],
+    ['Yeraltından Notlar', 'Fyodor Dostoyevski', 'İstanbul'], ['Kaşağı', 'Ömer Seyfettin', 'Balıkesir'], ['Sineklerin Tanrısı', 'William Golding', 'Malatya'],
+  ];
+  const ekKitaplar = EK.map(([ad, yazar, sehir], i) => ({
+    id: 'e' + i, ad, yazar, kategori: 'Roman', kondisyon: ['iyi', 'yeni', 'okunmus'][i % 3], aciklama: '', foto: '',
+    sahipId: 'u' + ((i % 5) + 1), sahipAd: Object.values(KISILER)[i % 5].ad, sahipFoto: '', sehir, durum: 'musait',
+    olusturma: simdi - (i + 3) * gun * 0.9,
+  }));
+  const YOL = [
+    ['Tutunamayanlar', 'Oğuz Atay', 'İstanbul', 'Van', 0.3, false], ['Kürk Mantolu Madonna', 'Sabahattin Ali', 'İzmir', 'Erzurum', 1.2, false],
+    ['Saatleri Ayarlama Enstitüsü', 'Ahmet Hamdi Tanpınar', 'Ankara', 'Trabzon', 2.1, true], ['Simyacı', 'Paulo Coelho', 'Antalya', 'Edirne', 2.8, true],
+    ['Küçük Prens', 'Antoine de Saint-Exupéry', 'Bursa', 'Diyarbakır', 3.5, true], ['İnce Memed', 'Yaşar Kemal', 'Adana', 'İstanbul', 4.2, true],
+    ['Sefiller', 'Victor Hugo', 'Eskişehir', 'Hatay', 5.0, true], ['Dune', 'Frank Herbert', 'Kocaeli', 'Konya', 5.6, true],
+    ['1984', 'George Orwell', 'Samsun', 'Muğla', 6.3, true],
+  ];
+  const yolculuklar = YOL.map(([kitapAd, kitapYazar, nereden, nereye, gunOnce, teslim], i) => ({
+    id: 'y' + i, kitapId: '', kitapAd, kitapYazar, kitapFoto: '', nereden, nereye, tarih: simdi - gunOnce * gun, teslim,
+  }));
+  return { oturum: null, hesaplar: {}, profiller: {}, adresler: {}, kitaplar: [...kitaplar, ...ekKitaplar], talepler: [], talepAdresleri: {}, yolculuklar };
 }
 function kaydet() {
   try { localStorage.setItem(ANAHTAR, JSON.stringify(veri)); } catch (e) { console.warn('Demo verisi kaydedilemedi', e); }
@@ -54,6 +78,7 @@ function kaydet() {
 function yayinla() {
   const kitaplar = [...veri.kitaplar].sort((a, b) => b.olusturma - a.olusturma);
   dinleyiciler.kitap.forEach((cb) => cb(kitaplar));
+  dinleyiciler.yolculuk.forEach((cb) => cb([...veri.yolculuklar].sort((a, b) => b.tarih - a.tarih)));
   dinleyiciler.talep.forEach(({ uid, cb }) => cb({
     gelen: veri.talepler.filter((t) => t.sahipId === uid),
     giden: veri.talepler.filter((t) => t.isteyenId === uid),
@@ -225,17 +250,35 @@ export async function talepGeriCek(talep) {
   kitapBul(talep.kitapId).durum = 'musait';
   kaydet();
 }
-export async function kargola(talep, firma, takipNo) {
+export async function kargola(talep, firma, takipNo, nereden) {
   await bekle();
   guncelle(talep.id, { durum: 'kargoda', kargo: { firma, takipNo } });
   kitapBul(talep.kitapId).durum = 'verildi';
+  if (nereden && talep.isteyenSehir) {
+    veri.yolculuklar.unshift({
+      id: talep.id, kitapId: talep.kitapId, kitapAd: talep.kitapAd, kitapYazar: talep.kitapYazar, kitapFoto: talep.kitapFoto || '',
+      nereden, nereye: talep.isteyenSehir, tarih: Date.now(), teslim: false,
+    });
+  }
   kaydet();
   // Demo: alıcı birkaç saniye sonra teslim aldığını bildirir.
   setTimeout(() => {
     if (talepBul(talep.id)?.durum === 'kargoda') { guncelle(talep.id, { durum: 'teslim' }); kaydet(); }
   }, 15000);
 }
-export async function teslimAldim(talep) { await bekle(); guncelle(talep.id, { durum: 'teslim' }); kaydet(); }
+export async function teslimAldim(talep) {
+  await bekle();
+  guncelle(talep.id, { durum: 'teslim' });
+  const y = veri.yolculuklar.find((x) => x.id === talep.id);
+  if (y) Object.assign(y, { teslim: true, teslimTarih: Date.now() });
+  kaydet();
+}
+
+export function yolculuklariDinle(cb) {
+  dinleyiciler.yolculuk.add(cb);
+  setTimeout(yayinla, 0);
+  return () => dinleyiciler.yolculuk.delete(cb);
+}
 
 export function demoyuSifirla() {
   localStorage.removeItem(ANAHTAR);

@@ -4,6 +4,7 @@ import { demoMu } from '../veri/index.js';
 import { h, ikon, avatar, kapak, $ } from '../ui.js';
 import { KATEGORILER } from '../sabitler.js';
 import { kitapKarti, bosDurum, iskelet, logo, bulunma } from './ortak.js';
+import { haftaninYolculuklari, ozet, rotaHaritasi } from './yolculuklar.js';
 
 function selam() {
   const s = new Date().getHours();
@@ -56,6 +57,8 @@ export function kesfetEkrani(kok) {
       <div class="liste-yatay yatay-kaydir">${sehrim.map((k) => kitapKarti(k, { genis: true })).join('')}</div>
     </section>` : ''}
 
+    ${yolculukKarti()}
+
     <section class="bilgi-kart">
       <div>
         <b>${yolda > 0 ? `${yolda} kitap yeni okuruna yol aldı` : 'Nasıl çalışır?'}</b>
@@ -73,6 +76,11 @@ export function kesfetEkrani(kok) {
   ciz();
   return {
     guncelle(neler) {
+      if (neler === 'yolculuklar') {
+        const eski = $('#yk-kart', kok);
+        if (eski) eski.outerHTML = yolculukKarti();
+        return;
+      }
       if (neler !== 'kitaplar') return;
       const y = kok.scrollTop;
       const vitrin = $('.vitrin', kok)?.scrollLeft;
@@ -81,4 +89,19 @@ export function kesfetEkrani(kok) {
       if ($('.vitrin', kok) && vitrin) $('.vitrin', kok).scrollLeft = vitrin;
     },
   };
+}
+
+// Keşfet'teki "Haftanın yolculukları" kartı: mini animasyonlu harita + kısa özet
+function yolculukKarti() {
+  const liste = haftaninYolculuklari();
+  const o = ozet(liste);
+  return `<a class="yk-kart" id="yk-kart" data-git="yolculuklar">
+    <div class="yk-kart-metin">
+      <span class="kucuk-etiket acik">${ikon('rota', 13)} Haftanın yolculukları</span>
+      <b>${o.adet ? `${o.adet} kitap, ${o.km.toLocaleString('tr-TR')} km yol yaptı` : 'Kitaplar yola çıkmayı bekliyor'}</b>
+      <span>${o.enUzun ? `En uzunu: ${h(o.enUzun.nereden)} → ${h(o.enUzun.nereye)}` : 'Kargoya verilen her kitap burada iz bırakır.'}</span>
+    </div>
+    <div class="yk-kart-harita">${rotaHaritasi(liste, { mini: true })}</div>
+    <span class="yk-kart-ok">${ikon('sag', 18)}</span>
+  </a>`;
 }

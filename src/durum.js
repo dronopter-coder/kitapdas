@@ -6,6 +6,7 @@ export const durum = {
   kitaplarHazir: false,
   gelen: [],
   giden: [],
+  yolculuklar: [], // herkese açık kargo rotaları (Haftanın yolculukları)
 };
 
 const aboneler = new Set();
