@@ -14,6 +14,8 @@ Rafına ekle  →  İste (adres + not)  →  Kabul  →  Kargoya ver (firma + ta
 - **Keşfet:** yeni gelenler, şehrindeki kitaplar, tüm raf, kategoriler.
 - **Ara:** kitap/yazar/tür araması, şehir ve kategori filtresi.
 - **+ (Kitap ekle):** fotoğraf çek / galeriden seç, ad, yazar, tür, durum (Yeni gibi / İyi / Okunmuş / Yıpranmış), not. Fotoğrafsız kitaplara otomatik özel kapak tasarlanır.
+- **Yapay zekâ özeti:** kitap eklenince Gemini (Firebase AI Logic, ücretsiz Spark paketi) 10-15 satırlık spoilersiz bir özet üretip kitap kaydına yazar; okurlar kitap sayfasında "Özeti gör" ile açılır pencerede okur. Model kitabı tanımıyorsa özet uydurmaz. Kurulum: Firebase konsolu → **AI Logic → Get started → Gemini Developer API**.
+- **Telefon geri tuşu:** önce açık pencereyi kapatır, iç sayfalarda bir önceki sayfaya döner, sekmelerden Keşfet'e gider; Keşfet'te iki kez basınca uygulamadan çıkar.
 - **Harita:** illere göre kitap yoğunluğu (renk + sayı balonları). Bir şehre dokununca yakınlaşır, kitaplar baloncuklar halinde açılır; altta şehrin rafı ve "en dolu raflar" sıralaması. Çevrimdışı SVG harita (il sınırları: turkey-map-react, MIT).
 - **Haftanın yolculukları:** son 7 günde kargoya verilen kitapların şehirden şehre animasyonlu rotaları, toplam km, en uzun yolculuk, en cömert şehir ve yolculuk günlüğü. Kayıtlar kişi bilgisi içermez (yalnızca kitap ve şehirler).
 - **Takas:** gelen talepler (kabul et, reddet, kargoya verdim) ve isteklerim (takip numarası, teslim aldım), 4 adımlı ilerleme çubuğu.

@@ -2,8 +2,9 @@ import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { api } from './veri/index.js';
 import { durum, degisti, abone } from './durum.js';
-import { ikon, $, titret, toast, hataMetni } from './ui.js';
-import { git, geri, geriSayildi, rotalayiciAyarla } from './yon.js';
+import { ikon, $, titret, toast, hataMetni, ustSayfayiKapat } from './ui.js';
+import { git, geri, yiginiSifirla, tarayiciGeriGitti, rotalayiciAyarla } from './yon.js';
+import { App } from '@capacitor/app';
 import { reklamlariBaslat, bannerGoster } from './reklam.js';
 import { girisEkrani } from './ekranlar/giris.js';
 import { kesfetEkrani } from './ekranlar/kesfet.js';
@@ -93,6 +94,30 @@ function durumCubugu(koyu) {
   StatusBar.setStyle({ style: koyu ? Style.Dark : Style.Light }).catch(() => {});
 }
 
+// Telefonun geri tuşu:
+//  1) açık pencere (alt sayfa) varsa onu kapatır
+//  2) iç sayfadaysa bir önceki sayfaya döner
+//  3) Harita/Takas/Profil'den Keşfet'e döner
+//  4) Keşfet'te (ya da giriş/doğrulama/ilk kurulumda) iki kez basılınca uygulamadan çıkar
+const CIKIS_SAYFALARI = new Set(['giris', 'dogrula', 'kesfet']);
+const SEKME_SAYFALARI = new Set(['harita', 'takas', 'profil']);
+let sonCikisDenemesi = 0;
+export function donanimGeri() {
+  if (ustSayfayiKapat()) return 'pencere';
+  const { ad, sorgu } = cozumle();
+  if (SEKME_SAYFALARI.has(ad)) { yiginiSifirla(); git('kesfet', { degistir: true }); return 'kesfet'; }
+  const kok = CIKIS_SAYFALARI.has(ad) || (ad === 'profil-duzenle' && sorgu.ilk === '1');
+  if (!kok) { geri(); return 'geri'; }
+  if (Date.now() - sonCikisDenemesi < 2000) {
+    if (Capacitor.isNativePlatform()) App.exitApp();
+    return 'cikis';
+  }
+  sonCikisDenemesi = Date.now();
+  toast('Çıkmak için tekrar geri tuşuna bas');
+  return 'uyari';
+}
+window.okudumGeri = donanimGeri; // sınama için
+
 function abonelikleriKapat() {
   kitapAboneligi?.(); kitapAboneligi = null;
   talepAboneligi?.(); talepAboneligi = null;
@@ -126,7 +151,10 @@ abone((neler) => {
 function baslat() {
   durum.kullanici = undefined;
   rotalayiciAyarla(rotala);
-  if (Capacitor.isNativePlatform()) document.documentElement.classList.add('yerel');
+  if (Capacitor.isNativePlatform()) {
+    document.documentElement.classList.add('yerel');
+    App.addListener('backButton', () => donanimGeri());
+  }
 
   document.addEventListener('click', (e) => {
     const g = e.target.closest('[data-git]');
@@ -135,7 +163,7 @@ function baslat() {
   });
   window.addEventListener('popstate', () => {
     if ($('.sheet-kap')) return; // açık alt sayfayı kapatan geri hareketi
-    geriSayildi();
+    tarayiciGeriGitti();
     rotala();
   });
 

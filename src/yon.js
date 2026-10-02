@@ -1,6 +1,7 @@
-// Basit hash yönlendirici yardımcıları (ekranlar main.js'i içe aktarmadan gezinebilsin diye ayrı).
+// Basit hash yönlendirici + uygulamanın kendi sayfa yığını.
+// Telefonun geri tuşu da, ekrandaki geri düğmesi de aynı yığını kullanır (WebView geçmişine güvenilmez).
 let rotala = () => {};
-let derinlik = 0;
+const yigin = []; // önceki sayfaların adresleri
 
 export function rotalayiciAyarla(f) { rotala = f; }
 
@@ -8,13 +9,22 @@ export function git(yol, { degistir = false } = {}) {
   const hedef = '#/' + yol.replace(/^#?\/?/, '');
   if (location.hash === hedef && !degistir) return rotala();
   if (degistir) history.replaceState(null, '', hedef);
-  else { history.pushState(null, '', hedef); derinlik++; }
+  else {
+    yigin.push(location.hash || '#/kesfet');
+    history.pushState(null, '', hedef);
+  }
   rotala();
 }
 
+// Bir önceki sayfaya dön; yığın boşsa yedek sayfaya git.
 export function geri(yedek = 'kesfet') {
-  if (derinlik > 0) history.back(); // derinlik popstate'te azaltılır
-  else git(yedek, { degistir: true });
+  const onceki = yigin.pop();
+  if (onceki) {
+    history.replaceState(null, '', onceki);
+    rotala();
+  } else git(yedek, { degistir: true });
 }
 
-export function geriSayildi() { if (derinlik > 0) derinlik--; }
+export const yiginiSifirla = () => { yigin.length = 0; };
+// Tarayıcının geri düğmesi (web) kullanıldığında yığın da aynı adımı atsın.
+export const tarayiciGeriGitti = () => { yigin.pop(); };

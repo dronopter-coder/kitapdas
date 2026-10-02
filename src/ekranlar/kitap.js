@@ -6,6 +6,7 @@ import { kondisyon, KITAP_DURUM, AKTIF_TALEP, ILLER } from '../sabitler.js';
 import { bosDurum, durumRozeti } from './ortak.js';
 import { git, geri } from '../yon.js';
 import { gecisReklami } from '../reklam.js';
+import { ozetiHazirla } from '../ozetAkisi.js';
 
 export function kitapEkrani(kok, { parca }) {
   const id = parca[0];
@@ -56,6 +57,7 @@ export function kitapEkrani(kok, { parca }) {
       <h1 class="detay-ad">${h(k.ad)}</h1>
       <p class="detay-yazar">${h(k.yazar)}</p>
       ${k.aciklama ? `<blockquote class="detay-not">${h(k.aciklama)}</blockquote>` : ''}
+      ${ozetBlogu(k, benim)}
 
       <a class="sahip-kart" ${benim ? '' : `data-git="kisi/${h(k.sahipId)}"`}>
         ${avatar(k.sahipAd, k.sahipFoto, 48)}
@@ -74,6 +76,12 @@ export function kitapEkrani(kok, { parca }) {
     </section>
     ${alt}`;
 
+    $('#k-ozet', kok)?.addEventListener('click', () => { titret(); ozetSayfasi(k); });
+    $('#k-ozet-uret', kok)?.addEventListener('click', async () => {
+      titret('orta');
+      const ozet = await ozetiHazirla(k);
+      if (ozet) ozetSayfasi({ ...k, ozet });
+    });
     $('#k-iste', kok)?.addEventListener('click', () => { titret('orta'); talepSayfasi(k); });
     $('#k-sil', kok)?.addEventListener('click', async () => {
       const aktifVar = durum.gelen.some((t) => t.kitapId === k.id && ['kabul', 'kargoda'].includes(t.durum));
@@ -155,4 +163,30 @@ function basariSayfasi(k) {
       <button class="dugme hayalet genis" data-kapat>Keşfetmeye devam et</button>
     </div>`);
   $('#b-takas', s.el).addEventListener('click', async () => { await s.kapat(); git('takas?sekme=giden'); });
+}
+
+// Özet alanı: hazırsa "Özeti gör", hazırlanıyorsa durum, sahibi için ve özet yoksa "oluştur"
+function ozetBlogu(k, benim) {
+  if (k.ozet) {
+    return `<button class="ozet-dugme" id="k-ozet">${ikon('parilti', 20)}<span><b>Kitabın özetini gör</b><em>Yapay zekâ ile hazırlanmış kısa özet</em></span>${ikon('sag', 18)}</button>`;
+  }
+  if (durum.ozetHazirlaniyor.has(k.id)) {
+    return `<div class="ozet-dugme hazirlaniyor"><span class="donen koyu"></span><span><b>Özet hazırlanıyor…</b><em>Birkaç saniye sürer</em></span></div>`;
+  }
+  if (benim) {
+    return `<button class="ozet-dugme" id="k-ozet-uret">${ikon('parilti', 20)}<span><b>Yapay zekâ özeti oluştur</b><em>Okurlar kitabı tanımak için okuyabilir</em></span>${ikon('sag', 18)}</button>`;
+  }
+  return '';
+}
+
+function ozetSayfasi(k) {
+  const satirlar = k.ozet.split('\n').filter(Boolean);
+  sayfaAc(`
+    <div class="ozet-bas">
+      <div class="ozet-kapak">${kapak(k, 'mini')}</div>
+      <div><span class="kucuk-etiket">${ikon('parilti', 13)} Kısa özet</span><h3 class="sheet-baslik">${h(k.ad)}</h3><span class="ozet-yazar">${h(k.yazar)}</span></div>
+    </div>
+    <div class="ozet-metin">${satirlar.map((s) => `<p>${h(s)}</p>`).join('')}</div>
+    <p class="ozet-uyari">${ikon('bilgi', 14)} Bu özet yapay zekâ tarafından hazırlandı ve hata içerebilir. Spoiler vermemeye çalışır.</p>
+    <button class="dugme ana genis" data-kapat>Tamam</button>`, { sinif: 'uzun' });
 }

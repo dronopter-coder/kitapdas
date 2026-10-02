@@ -116,6 +116,15 @@ export function toast(mesaj, tur = 'bilgi') {
 }
 
 // ——— Alt sayfa (bottom sheet) ———
+// Açık alt sayfalar (en üstteki sonda). Telefonun geri tuşu önce bunları kapatır.
+const acikSayfalar = [];
+export function ustSayfayiKapat() {
+  const ust = acikSayfalar[acikSayfalar.length - 1];
+  if (!ust) return false;
+  ust.kapat();
+  return true;
+}
+
 export function sayfaAc(icerik, { sinif = '' } = {}) {
   const kap = document.createElement('div');
   kap.className = 'sheet-kap';
@@ -124,10 +133,13 @@ export function sayfaAc(icerik, { sinif = '' } = {}) {
   requestAnimationFrame(() => requestAnimationFrame(() => kap.classList.add('acik')));
   let kapandi = false;
   let cozucu;
+  const kayit = { kapat: () => kapatVeGeri() };
+  acikSayfalar.push(kayit);
   const bitti = new Promise((r) => { cozucu = r; });
   const kapat = () => {
     if (kapandi) return;
     kapandi = true;
+    acikSayfalar.splice(acikSayfalar.indexOf(kayit), 1);
     kap.classList.remove('acik');
     window.removeEventListener('popstate', geriTusu);
     setTimeout(() => { kap.remove(); cozucu(); }, 300);

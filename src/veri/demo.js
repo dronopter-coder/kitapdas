@@ -188,6 +188,29 @@ export async function kitapEkle(kullanici, profil, v, foto) {
   kaydet();
   return id;
 }
+// Demo: gerçek yapay zekâ yok; örnek bir metin yazılır (gerçek Firebase bağlanınca Gemini üretir).
+export async function ozetHazirla(kitapId, ad, yazar) {
+  await bekle(2500);
+  const k = kitapBul(kitapId);
+  if (!k) return null;
+  k.ozet = [
+    `“${ad}”, ${yazar} imzasını taşıyan bir kitap.`,
+    'Bu metin demo modunda örnek olarak yazıldı.',
+    'Gerçek sürümde özeti yapay zekâ hazırlar.',
+    'Kitabın konusu ve ana karakterleri burada anlatılır.',
+    'Önce hikâyenin kurulduğu dünya tanıtılır.',
+    'Sonra kahramanın karşılaştığı sorun belirir.',
+    'Olaylar ilerledikçe kahraman kendi seçimleriyle yüzleşir.',
+    'Yan karakterler hikâyeye derinlik katar.',
+    'Kitabın ana temaları arasında insan ve zaman vardır.',
+    'Anlatım sade ve akıcı bir dille ilerler.',
+    'Sürprizleri açık etmemek için sonu anlatılmaz.',
+    'Okurken sizi neyin beklediğini keşfetmek size kalıyor.',
+  ].join('\n');
+  kaydet();
+  return k.ozet;
+}
+
 export async function kitapSil(kitap) {
   veri.kitaplar = veri.kitaplar.filter((k) => k.id !== kitap.id);
   kaydet();

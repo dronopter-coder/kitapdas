@@ -7,6 +7,7 @@ export const durum = {
   gelen: [],
   giden: [],
   yolculuklar: [], // herkese açık kargo rotaları (Haftanın yolculukları)
+  ozetHazirlaniyor: new Set(), // yapay zekâ özeti üretilen kitap kimlikleri
 };
 
 const aboneler = new Set();

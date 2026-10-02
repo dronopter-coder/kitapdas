@@ -6,6 +6,7 @@ import { KATEGORILER, KONDISYONLAR } from '../sabitler.js';
 import { ustBar } from './ortak.js';
 import { git } from '../yon.js';
 import { gecisReklami } from '../reklam.js';
+import { ozetiHazirla } from '../ozetAkisi.js';
 import { fotoAl as fotoGetir } from '../foto.js';
 
 export function ekleEkrani(kok) {
@@ -109,7 +110,9 @@ export function ekleEkrani(kok) {
         ad, yazar, kategori: secim.kategori, kondisyon: secim.kondisyon, aciklama: f.aciklama.value.trim(),
       }, foto);
       titret('guclu');
-      toast('Kitabın rafta! Yeni okurunu bekliyor.', 'basari');
+      toast('Kitabın rafta! Özeti hazırlanıyor…', 'basari');
+      // Yapay zekâ özeti arka planda hazırlanır; kitap detayında "Özeti gör" olarak belirir.
+      ozetiHazirla({ id, ad, yazar }, { sessiz: true });
       git(`kitap/${id}`, { degistir: true });
       gecisReklami();
     } catch (err) {

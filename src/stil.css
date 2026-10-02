@@ -707,3 +707,27 @@ em { font-style: italic; }
 .baglanti.koyu { color: #B5423A; }
 button.profil-avatar { position: relative; display: inline-block; cursor: pointer; }
 button.profil-avatar .foto-rozet { width: 28px; height: 28px; right: -2px; bottom: 0; background: var(--mercan); box-shadow: 0 0 0 3px var(--gece); }
+
+/* ——— Yapay zekâ özeti ——— */
+.ozet-dugme {
+  display: flex; align-items: center; gap: 12px; width: 100%; margin-top: 16px; padding: 14px 16px; border-radius: var(--r-m); text-align: left;
+  background: linear-gradient(135deg, #F3ECFF, #FFF1E6); color: var(--murekkep); box-shadow: inset 0 0 0 1.5px rgba(109, 91, 184, .25), var(--golge-1);
+  transition: transform .15s;
+}
+.ozet-dugme:active { transform: scale(.98); }
+.ozet-dugme > .ikon:first-child { color: #6D5BB8; width: 38px; height: 38px; padding: 9px; border-radius: 12px; background: rgba(109, 91, 184, .12); box-sizing: border-box; }
+.ozet-dugme > span:not(.donen) { flex: 1; display: flex; flex-direction: column; }
+.ozet-dugme b { font-size: 15px; }
+.ozet-dugme em { font-style: normal; font-size: 12.5px; color: var(--murekkep-2); }
+.ozet-dugme > .ikon:last-child { color: var(--murekkep-3); }
+.ozet-dugme.hazirlaniyor { box-shadow: inset 0 0 0 1.5px var(--cizgi); background: var(--kart); }
+.ozet-dugme.hazirlaniyor .donen { width: 24px; height: 24px; flex: none; }
+.ozet-bas { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+.ozet-kapak { width: 54px; flex: none; }
+.ozet-bas .kucuk-etiket { display: inline-flex; align-items: center; gap: 4px; color: #6D5BB8; }
+.ozet-bas .sheet-baslik { font-size: 21px; margin-top: 2px; }
+.ozet-yazar { font-size: 13px; color: var(--murekkep-2); }
+.ozet-metin { display: flex; flex-direction: column; gap: 9px; padding: 16px 16px 16px 18px; border-radius: var(--r-m); background: var(--kart); box-shadow: var(--golge-1); border-left: 4px solid #6D5BB8; max-height: 46vh; overflow-y: auto; }
+.ozet-metin p { font-family: var(--serif); font-size: 15.5px; line-height: 1.5; }
+.ozet-uyari { display: flex; gap: 6px; align-items: flex-start; font-size: 12px; color: var(--murekkep-3); margin: 12px 2px 16px; }
+.ozet-uyari .ikon { margin-top: 1px; flex: none; }

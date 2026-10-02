@@ -10,13 +10,15 @@ import {
   initializeFirestore, persistentLocalCache, collection, doc, getDoc, setDoc, updateDoc, deleteDoc,
   onSnapshot, query, where, orderBy, limit, writeBatch,
 } from 'firebase/firestore';
+import { getAI, getGenerativeModel, GoogleAIBackend } from 'firebase/ai';
 import { Capacitor } from '@capacitor/core';
+import { MODELLER, SISTEM_ISTEMI, istem, ozetiTemizle } from '../ozet.js';
 import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 
-let auth, db;
+let app, auth, db, yz;
 
 export function baslat(ayar) {
-  const app = initializeApp(ayar);
+  app = initializeApp(ayar);
   auth = Capacitor.isNativePlatform()
     ? initializeAuth(app, { persistence: indexedDBLocalPersistence })
     : getAuth(app);
@@ -82,6 +84,26 @@ export async function profilGetir(uid) {
   const s = await getDoc(doc(db, 'kullanicilar', uid));
   return s.exists() ? s.data() : null;
 }
+// ——— Yapay zekâ özeti ———
+// Özet bir kez üretilir ve kitap kaydına yazılır; okurlar hazır metni görür (her görüntülemede yeni çağrı yapılmaz).
+export async function ozetHazirla(kitapId, ad, yazar) {
+  yz ||= getAI(app, { backend: new GoogleAIBackend() });
+  let sonHata;
+  for (const model of MODELLER) {
+    try {
+      const m = getGenerativeModel(yz, { model, systemInstruction: SISTEM_ISTEMI, generationConfig: { temperature: 0.4 } });
+      const cevap = await m.generateContent(istem(ad, yazar));
+      const ozet = ozetiTemizle(cevap.response.text());
+      if (!ozet) return null; // model kitabı tanımıyor: uydurma özet yazılmaz
+      await updateDoc(kitapRef(kitapId), { ozet });
+      return ozet;
+    } catch (e) {
+      sonHata = e; // model yok / kota doldu: sıradaki modeli dene
+    }
+  }
+  throw sonHata;
+}
+
 // Ad, şehir ve fotoğraf kitap kayıtlarına da kopyalandığı için kullanıcının kitaplarında da güncellenir.
 export async function profilKaydet(uid, veri, kitaplarim = []) {
   const b = writeBatch(db);
