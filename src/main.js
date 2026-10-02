@@ -18,6 +18,7 @@ import { kisiEkrani } from './ekranlar/kisi.js';
 import { dogrulaEkrani } from './ekranlar/dogrula.js';
 import { haritaEkrani } from './ekranlar/harita.js';
 import { yolculuklarEkrani } from './ekranlar/yolculuklar.js';
+import { yildizlarEkrani } from './ekranlar/yildizlar.js';
 
 const ROTALAR = {
   giris: { ekran: girisEkrani, acik: true, koyu: true },
@@ -26,6 +27,7 @@ const ROTALAR = {
   ara: { ekran: araEkrani },
   harita: { ekran: haritaEkrani, sekme: 'harita', tamEkran: true },
   yolculuklar: { ekran: yolculuklarEkrani },
+  yildizlar: { ekran: yildizlarEkrani },
   takas: { ekran: takasEkrani, sekme: 'takas' },
   profil: { ekran: profilEkrani, sekme: 'profil' },
   kitap: { ekran: kitapEkrani },

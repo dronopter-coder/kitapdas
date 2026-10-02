@@ -7,6 +7,7 @@ export const durum = {
   gelen: [],
   giden: [],
   yolculuklar: [], // herkese açık kargo rotaları (Haftanın yolculukları)
+  profilOnbellek: new Map(), // başka kullanıcıların herkese açık profilleri: uid → { ad, sehir, foto }
   ozetHazirlaniyor: new Set(), // yapay zekâ özeti üretilen kitap kimlikleri
 };
 

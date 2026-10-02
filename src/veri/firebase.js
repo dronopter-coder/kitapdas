@@ -104,6 +104,18 @@ export async function ozetHazirla(kitapId, ad, yazar) {
   throw sonHata;
 }
 
+// Herkese açık profiller (ad, şehir, fotoğraf): sıralama ve gönderim listeleri için
+export async function profilleriGetir(uidler) {
+  const sonuc = {};
+  await Promise.all([...new Set(uidler)].map(async (uid) => {
+    try {
+      const p = await profilGetir(uid);
+      if (p) sonuc[uid] = { ad: p.ad || '', sehir: p.sehir || '', foto: p.foto || '' };
+    } catch { /* okunamayan profil atlanır */ }
+  }));
+  return sonuc;
+}
+
 // Ad, şehir ve fotoğraf kitap kayıtlarına da kopyalandığı için kullanıcının kitaplarında da güncellenir.
 export async function profilKaydet(uid, veri, kitaplarim = []) {
   const b = writeBatch(db);
@@ -234,6 +246,6 @@ export async function teslimAldim(talep) {
 }
 
 export function yolculuklariDinle(cb, hata) {
-  const q = query(collection(db, 'yolculuklar'), orderBy('tarih', 'desc'), limit(80));
+  const q = query(collection(db, 'yolculuklar'), orderBy('tarih', 'desc'), limit(500));
   return onSnapshot(q, (s) => cb(listele(s)), hata);
 }

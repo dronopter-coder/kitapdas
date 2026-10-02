@@ -1,27 +1,70 @@
-// Bir okurun rafı
+// Bir okurun sayfası: rafı ve gönderdiği kitaplar (kime hangi kitabı gönderdi)
 import { durum } from '../durum.js';
-import { h, ikon, avatar } from '../ui.js';
+import { h, ikon, avatar, kapak, sayfaAc, toast, zamanOnce, titret } from '../ui.js';
 import { kitapKarti, bosDurum, ustBar } from './ortak.js';
+import { profilleriYukle, profilBilgisi } from './yildizlar.js';
 
 export function kisiEkrani(kok, { parca }) {
   const uid = parca[0];
+
+  const gonderilenler = () => durum.yolculuklar.filter((y) => y.sahipId === uid).sort((a, b) => b.tarih - a.tarih);
+
   const ciz = () => {
     const kitaplar = durum.kitaplar.filter((k) => k.sahipId === uid);
     const ornek = kitaplar[0];
+    const prof = profilBilgisi(uid);
+    const ad = prof.ad || ornek?.sahipAd || '';
+    const foto = prof.foto || ornek?.sahipFoto || '';
+    const sehir = prof.sehir || ornek?.sehir || '';
     const rafta = kitaplar.filter((k) => k.durum === 'musait');
-    const paylasti = kitaplar.filter((k) => k.durum === 'verildi').length;
+    const gonderilen = gonderilenler();
+
     kok.innerHTML = `
       ${ustBar('')}
-      ${ornek ? `<section class="kisi-bas">
-        ${avatar(ornek.sahipAd, ornek.sahipFoto, 76)}
-        <h1>${h(ornek.sahipAd)}</h1>
-        <p>${ikon('konum', 15)} ${h(ornek.sehir || '')}</p>
-        <div class="istatistik kucuk"><div><b>${rafta.length}</b><span>Rafında</span></div><div><b>${paylasti}</b><span>Paylaştı</span></div></div>
+      ${ad ? `<section class="kisi-bas">
+        <div class="kisi-avatar">${avatar(ad, foto, 84)}</div>
+        <h1>${h(ad)}</h1>
+        <p>${sehir ? `${ikon('konum', 15)} ${h(sehir)}` : ''}</p>
+        <div class="istatistik kucuk">
+          <div class="ist"><b>${rafta.length}</b><span>Rafında</span></div>
+          <button class="ist dokunulur" id="ks-paylasti" aria-label="Gönderdiği kitapları gör"><b>${gonderilen.length}</b><span>Paylaştı ${ikon('sag', 12, 2.6)}</span></button>
+        </div>
       </section>
       <section class="bolum"><div class="bolum-bas"><h2>Rafındaki kitaplar</h2></div>
         ${rafta.length ? `<div class="izgara">${rafta.map((k) => kitapKarti(k)).join('')}</div>` : bosDurum('raf', 'Rafı şu an boş', 'Bu okurun paylaşacak kitabı kalmamış.')}
       </section>` : bosDurum('kisi', 'Okur bulunamadı', '')}`;
+
+    kok.querySelector('#ks-paylasti')?.addEventListener('click', () => { titret(); gonderilenleriGoster(ad, gonderilen); });
   };
+
+  // Gönderdiği kitaplar: kitap → alıcı (ad, şehir), ne zaman, ulaştı mı
+  const gonderilenleriGoster = (ad, liste) => {
+    if (!liste.length) return toast(`${ad.split(' ')[0]} henüz kitap göndermedi.`);
+    const ciz2 = () => liste.map((y) => {
+      const a = profilBilgisi(y.isteyenId);
+      return `<li class="${y.teslim ? 'ulasti' : 'yolda'}" ${y.kitapId ? `data-git="kitap/${h(y.kitapId)}" data-kapat` : ''}>
+        <div class="gunluk-kapak">${kapak({ ad: y.kitapAd, yazar: y.kitapYazar || '', foto: y.kitapFoto }, 'mini')}</div>
+        <div class="gunluk-bilgi">
+          <b>${h(y.kitapAd)}</b>
+          <span class="kisi-ok">${ikon('sag', 14)}${avatar(a.ad || 'Okur', a.foto, 20)}<span><b>${h(a.ad || 'Okur')}</b>${y.nereye ? ` · ${h(y.nereye)}` : ''}</span></span>
+          <span class="gunluk-meta">${zamanOnce(y.tarih)}</span>
+        </div>
+        <span class="gunluk-durum">${y.teslim ? `${ikon('tik', 14, 2.6)} Ulaştı` : `${ikon('kargo', 14)} Yolda`}</span>
+      </li>`;
+    }).join('');
+    const s = sayfaAc(`
+      <h3 class="sheet-baslik">${h(ad.split(' ')[0])}'in gönderdikleri</h3>
+      <p class="sheet-metin">Hangi kitabı kime gönderdi? Yalnızca kitap ve okurun adı görünür; adres ve telefon bilgisi asla paylaşılmaz.</p>
+      <ol class="gunluk duz sheet-liste" id="ks-liste">${ciz2()}</ol>
+      <button class="dugme ana genis" data-kapat>Tamam</button>`, { sinif: 'uzun' });
+    // Alıcıların adları/fotoğrafları geldikçe listeyi tazele
+    profilleriYukle(liste.map((y) => y.isteyenId)).then((degisti) => {
+      const l = s.el.querySelector('#ks-liste');
+      if (degisti && l) l.innerHTML = ciz2();
+    });
+  };
+
   ciz();
-  return { guncelle: (n) => n === 'kitaplar' && ciz() };
+  profilleriYukle([uid]).then((degisti) => { if (degisti && kok.isConnected) ciz(); });
+  return { guncelle: (n) => (n === 'kitaplar' || n === 'yolculuklar') && ciz() };
 }

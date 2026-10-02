@@ -1,9 +1,15 @@
 // Demo arka ucu: Firebase ayarı yokken uygulamanın tamamı bu cihazda (localStorage) çalışır.
 // Firebase arka ucuyla aynı işlevleri sunar. Gerçekçi olsun diye talepler bir süre sonra
 // "karşı taraf" tarafından otomatik onaylanıp kargolanır.
-const ANAHTAR = 'okudum_demo_v3';
+const ANAHTAR = 'okudum_demo_v4';
 
 const gun = 86400000;
+// Liderlik tablosunda daha çok kişi görünsün diye ek demo okurları
+const EK_KISILER = {
+  u6: { ad: 'Selin Çelik', sehir: 'Antalya' }, u7: { ad: 'Emre Korkmaz', sehir: 'Konya' }, u8: { ad: 'Deniz Aydın', sehir: 'Trabzon' },
+  u9: { ad: 'Gül Arslan', sehir: 'Samsun' }, u10: { ad: 'Okan Yıldız', sehir: 'Kayseri' }, u11: { ad: 'Pınar Doğan', sehir: 'Adana' },
+  u12: { ad: 'Berk Özkan', sehir: 'Mersin' },
+};
 const KISILER = {
   u1: { ad: 'Elif Yılmaz', sehir: 'İstanbul' },
   u2: { ad: 'Mert Kaya', sehir: 'Ankara' },
@@ -59,15 +65,21 @@ function tohumla() {
     sahipId: 'u' + ((i % 5) + 1), sahipAd: Object.values(KISILER)[i % 5].ad, sahipFoto: '', sehir, durum: 'musait',
     olusturma: simdi - (i + 3) * gun * 0.9,
   }));
+  // [kitap, yazar, nereden, nereye, kaç gün önce, teslim edildi mi, gönderen, alıcı]
   const YOL = [
-    ['Tutunamayanlar', 'Oğuz Atay', 'İstanbul', 'Van', 0.3, false], ['Kürk Mantolu Madonna', 'Sabahattin Ali', 'İzmir', 'Erzurum', 1.2, false],
-    ['Saatleri Ayarlama Enstitüsü', 'Ahmet Hamdi Tanpınar', 'Ankara', 'Trabzon', 2.1, true], ['Simyacı', 'Paulo Coelho', 'Antalya', 'Edirne', 2.8, true],
-    ['Küçük Prens', 'Antoine de Saint-Exupéry', 'Bursa', 'Diyarbakır', 3.5, true], ['İnce Memed', 'Yaşar Kemal', 'Adana', 'İstanbul', 4.2, true],
-    ['Sefiller', 'Victor Hugo', 'Eskişehir', 'Hatay', 5.0, true], ['Dune', 'Frank Herbert', 'Kocaeli', 'Konya', 5.6, true],
-    ['1984', 'George Orwell', 'Samsun', 'Muğla', 6.3, true],
+    ['Tutunamayanlar', 'Oğuz Atay', 'İstanbul', 'Van', 0.3, false, 'u1', 'u8'], ['Kürk Mantolu Madonna', 'Sabahattin Ali', 'İzmir', 'Erzurum', 0.6, false, 'u3', 'u10'],
+    ['Saatleri Ayarlama Enstitüsü', 'Ahmet Hamdi Tanpınar', 'Ankara', 'Trabzon', 0.9, true, 'u2', 'u8'], ['Simyacı', 'Paulo Coelho', 'Antalya', 'Edirne', 1.0, true, 'u6', 'u2'],
+    ['Küçük Prens', 'Antoine de Saint-Exupéry', 'Bursa', 'Diyarbakır', 1.1, true, 'u5', 'u3'], ['İnce Memed', 'Yaşar Kemal', 'Adana', 'İstanbul', 1.2, true, 'u11', 'u1'],
+    ['Sefiller', 'Victor Hugo', 'Eskişehir', 'Hatay', 1.3, true, 'u4', 'u11'], ['Dune', 'Frank Herbert', 'Kocaeli', 'Konya', 1.35, true, 'u1', 'u7'],
+    ['1984', 'George Orwell', 'Samsun', 'Muğla', 1.4, true, 'u9', 'u2'], ['Beyaz Diş', 'Jack London', 'İstanbul', 'Kayseri', 1.45, true, 'u1', 'u10'],
+    ['Martı', 'Richard Bach', 'Konya', 'İzmir', 1.5, true, 'u7', 'u3'], ['Huzur', 'Ahmet Hamdi Tanpınar', 'İstanbul', 'Samsun', 0.2, false, 'u1', 'u9'],
+    ['Çalıkuşu', 'Reşat Nuri Güntekin', 'Bursa', 'Antalya', 0.5, false, 'u5', 'u6'], ['Yaban', 'Yakup Kadri Karaosmanoğlu', 'İzmir', 'Ankara', 0.8, true, 'u3', 'u2'],
+    ['Satranç', 'Stefan Zweig', 'Mersin', 'İstanbul', 12, true, 'u12', 'u1'], ['Dönüşüm', 'Franz Kafka', 'Ankara', 'Mersin', 15, true, 'u2', 'u12'],
+    ['Suç ve Ceza', 'Fyodor Dostoyevski', 'İzmir', 'Konya', 20, true, 'u3', 'u7'], ['Aylak Adam', 'Yusuf Atılgan', 'Trabzon', 'Bursa', 25, true, 'u8', 'u5'],
+    ['Masumiyet Müzesi', 'Orhan Pamuk', 'İstanbul', 'Adana', 28, true, 'u1', 'u11'], ['Kuyucaklı Yusuf', 'Sabahattin Ali', 'Kayseri', 'Samsun', 33, true, 'u10', 'u9'],
   ];
-  const yolculuklar = YOL.map(([kitapAd, kitapYazar, nereden, nereye, gunOnce, teslim], i) => ({
-    id: 'y' + i, kitapId: '', kitapAd, kitapYazar, kitapFoto: '', nereden, nereye, tarih: simdi - gunOnce * gun, teslim,
+  const yolculuklar = YOL.map(([kitapAd, kitapYazar, nereden, nereye, gunOnce, teslim, sahipId, isteyenId], i) => ({
+    id: 'y' + i, kitapId: '', kitapAd, kitapYazar, kitapFoto: '', nereden, nereye, sahipId, isteyenId, tarih: simdi - gunOnce * gun, teslim,
   }));
   return { oturum: null, hesaplar: {}, profiller: {}, adresler: {}, kitaplar: [...kitaplar, ...ekKitaplar], talepler: [], talepAdresleri: {}, yolculuklar };
 }
@@ -165,6 +177,14 @@ export async function cikis() {
 }
 
 export async function profilGetir(uid) { return veri.profiller[uid] || null; }
+export async function profilleriGetir(uidler) {
+  const sonuc = {};
+  for (const uid of new Set(uidler)) {
+    const k = KISILER[uid] || EK_KISILER[uid] || veri.profiller[uid];
+    if (k) sonuc[uid] = { ad: k.ad || '', sehir: k.sehir || '', foto: k.foto || '' };
+  }
+  return sonuc;
+}
 export async function profilKaydet(uid, p) {
   veri.profiller[uid] = { ...veri.profiller[uid], ...p };
   for (const k of veri.kitaplar) if (k.sahipId === uid) Object.assign(k, { sahipAd: p.ad ?? k.sahipAd, sehir: p.sehir ?? k.sehir, sahipFoto: p.foto ?? k.sahipFoto });
@@ -280,7 +300,7 @@ export async function kargola(talep, firma, takipNo, nereden) {
   if (nereden && talep.isteyenSehir) {
     veri.yolculuklar.unshift({
       id: talep.id, kitapId: talep.kitapId, kitapAd: talep.kitapAd, kitapYazar: talep.kitapYazar, kitapFoto: talep.kitapFoto || '',
-      nereden, nereye: talep.isteyenSehir, tarih: Date.now(), teslim: false,
+      nereden, nereye: talep.isteyenSehir, sahipId: talep.sahipId, isteyenId: talep.isteyenId, tarih: Date.now(), teslim: false,
     });
   }
   kaydet();

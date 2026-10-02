@@ -5,6 +5,7 @@ import { h, ikon, avatar, kapak, $ } from '../ui.js';
 import { KATEGORILER } from '../sabitler.js';
 import { kitapKarti, bosDurum, iskelet, logo, bulunma } from './ortak.js';
 import { haftaninYolculuklari, ozet, rotaHaritasi } from './yolculuklar.js';
+import { yildizKartiHtml, yildizKartiniYenile } from './yildizlar.js';
 
 function selam() {
   const s = new Date().getHours();
@@ -58,6 +59,7 @@ export function kesfetEkrani(kok) {
     </section>` : ''}
 
     ${yolculukKarti()}
+    ${yildizKartiHtml()}
 
     <section class="bilgi-kart">
       <div>
@@ -74,11 +76,13 @@ export function kesfetEkrani(kok) {
     `;
   };
   ciz();
+  yildizKartiniYenile(kok);
   return {
     guncelle(neler) {
       if (neler === 'yolculuklar') {
         const eski = $('#yk-kart', kok);
         if (eski) eski.outerHTML = yolculukKarti();
+        yildizKartiniYenile(kok);
         return;
       }
       if (neler !== 'kitaplar') return;
