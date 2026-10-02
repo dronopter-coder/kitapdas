@@ -188,6 +188,19 @@ export async function fotoKucult(kaynak, enFazla = 1200, kalite = 0.82) {
   return c.toDataURL('image/jpeg', kalite);
 }
 
+// Ortadan kare kırp ve küçük JPEG'e çevir (profil fotoğrafı: ~4-6 KB, kitap/talep kayıtlarına da yazılabilsin)
+export async function fotoKare(kaynak, boyut = 144, kalite = 0.75) {
+  const img = new window.Image();
+  img.src = kaynak;
+  await img.decode();
+  const kenar = Math.min(img.naturalWidth, img.naturalHeight);
+  const c = document.createElement('canvas');
+  c.width = boyut;
+  c.height = boyut;
+  c.getContext('2d').drawImage(img, (img.naturalWidth - kenar) / 2, (img.naturalHeight - kenar) / 2, kenar, kenar, 0, 0, boyut, boyut);
+  return c.toDataURL('image/jpeg', kalite);
+}
+
 export function hataMetni(e) {
   const k = e?.code || '';
   const tablo = {

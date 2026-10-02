@@ -20,7 +20,7 @@ export function profilEkrani(kok) {
     kok.innerHTML = `
     <section class="profil-kahraman">
       <div class="profil-desen" aria-hidden="true">${LOGO_ISARET}</div>
-      <div class="profil-avatar">${avatar(p.ad, p.foto, 88)}</div>
+      <button class="profil-avatar" data-git="profil-duzenle" aria-label="Profil fotoğrafını değiştir">${avatar(p.ad, p.foto, 88)}<i class="foto-rozet">${ikon('kamera', 15, 2.2)}</i></button>
       <h1>${h(p.ad)}</h1>
       <p class="profil-alt">${ikon('konum', 15)} ${h(p.sehir)} · <span class="unvan">${unvan}</span></p>
       ${p.hakkinda ? `<p class="profil-hakkinda">${h(p.hakkinda)}</p>` : ''}

@@ -167,7 +167,7 @@ export async function cikis() {
 export async function profilGetir(uid) { return veri.profiller[uid] || null; }
 export async function profilKaydet(uid, p) {
   veri.profiller[uid] = { ...veri.profiller[uid], ...p };
-  for (const k of veri.kitaplar) if (k.sahipId === uid) Object.assign(k, { sahipAd: p.ad ?? k.sahipAd, sehir: p.sehir ?? k.sehir });
+  for (const k of veri.kitaplar) if (k.sahipId === uid) Object.assign(k, { sahipAd: p.ad ?? k.sahipAd, sehir: p.sehir ?? k.sehir, sahipFoto: p.foto ?? k.sahipFoto });
   kaydet();
 }
 export async function adresimiGetir(uid) { return veri.adresler[uid] || null; }

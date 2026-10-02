@@ -82,7 +82,15 @@ export async function profilGetir(uid) {
   const s = await getDoc(doc(db, 'kullanicilar', uid));
   return s.exists() ? s.data() : null;
 }
-export const profilKaydet = (uid, veri) => setDoc(doc(db, 'kullanicilar', uid), veri, { merge: true });
+// Ad, şehir ve fotoğraf kitap kayıtlarına da kopyalandığı için kullanıcının kitaplarında da güncellenir.
+export async function profilKaydet(uid, veri, kitaplarim = []) {
+  const b = writeBatch(db);
+  b.set(doc(db, 'kullanicilar', uid), veri, { merge: true });
+  for (const k of kitaplarim.slice(0, 400)) {
+    b.update(kitapRef(k.id), { sahipAd: veri.ad ?? k.sahipAd, sehir: veri.sehir ?? k.sehir, sahipFoto: veri.foto ?? k.sahipFoto ?? '' });
+  }
+  await b.commit();
+}
 
 // Kayıtlı teslimat adresi yalnızca sahibinin okuyabildiği alt belgede durur.
 export async function adresimiGetir(uid) {

@@ -16,7 +16,8 @@ service cloud.firestore {
       allow create, update: if ben(uid)
         && metin(request.resource.data.ad, 40)
         && metin(request.resource.data.sehir, 30)
-        && metin(request.resource.data.get('hakkinda', ''), 200);
+        && metin(request.resource.data.get('hakkinda', ''), 200)
+        && metin(request.resource.data.get('foto', ''), 30000);
       // Kayıtlı teslimat adresi: yalnızca sahibi
       match /ozel/{belge} {
         allow read, write: if ben(uid);
@@ -31,6 +32,7 @@ service cloud.firestore {
         && metin(request.resource.data.ad, 120)
         && metin(request.resource.data.yazar, 80)
         && metin(request.resource.data.aciklama, 500)
+        && metin(request.resource.data.get('sahipFoto', ''), 30000)
         && (request.resource.data.foto == '' || (request.resource.data.foto is string
             && request.resource.data.foto.matches('data:image/jpeg;base64,.*')
             && request.resource.data.foto.size() < 300000));

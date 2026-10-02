@@ -153,7 +153,7 @@ function baslat() {
     } else if (k) {
       try {
         durum.profil = (await api.profilGetir(k.uid)) || { ad: k.ad || k.eposta.split('@')[0], foto: k.foto || '', sehir: '' };
-        if (!durum.profil.foto && k.foto) durum.profil.foto = k.foto;
+        if (!durum.profil.foto && k.foto && !durum.profil.fotoKaldirildi) durum.profil.foto = k.foto;
       } catch (e) {
         durum.profil = { ad: k.ad, foto: k.foto, sehir: '' };
         toast(hataMetni(e), 'hata');
