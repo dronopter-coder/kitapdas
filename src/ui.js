@@ -1,6 +1,6 @@
 // Ortak arayüz yardımcıları: ikonlar, kapak üretici, toast, alt sayfa (sheet), onay penceresi.
 import {
-  House, Search, Plus, ArrowLeftRight, User, ArrowLeft, Camera, Image, MapPin, Truck, Check, X,
+  House, Search, Plus, Play, Volume2, ArrowLeftRight, User, ArrowLeft, Camera, Image, MapPin, Truck, Check, X,
   Package, BookOpen, Heart, Trash2, LogOut, ChevronRight, Send, Inbox, Copy, Info, Pencil,
   ShieldCheck, Sparkles, Mail, Lock, Eye, EyeOff, PackageCheck, CircleHelp, HandHeart, Undo2,
   BookMarked, SlidersHorizontal, Clock, Library, Map as HaritaIkon, MapPinned, Route, LocateFixed, Minus, Flag, TrendingUp,
@@ -10,7 +10,7 @@ import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { Capacitor } from '@capacitor/core';
 
 const IKONLAR = {
-  ev: House, ara: Search, arti: Plus, takas: ArrowLeftRight, kisi: User, geri: ArrowLeft,
+  oynat: Play, ses: Volume2, ev: House, ara: Search, arti: Plus, takas: ArrowLeftRight, kisi: User, geri: ArrowLeft,
   kamera: Camera, resim: Image, konum: MapPin, kargo: Truck, tik: Check, x: X, paket: Package,
   kitap: BookOpen, kalp: Heart, cop: Trash2, cikis: LogOut, sag: ChevronRight, gonder: Send,
   gelen: Inbox, kopya: Copy, bilgi: Info, kalem: Pencil, kalkan: ShieldCheck, parilti: Sparkles,

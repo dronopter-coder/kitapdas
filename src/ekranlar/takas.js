@@ -5,6 +5,7 @@ import { h, ikon, avatar, kapak, $, sayfaAc, toast, hataMetni, yukleniyor, onayl
 import { TALEP_DURUM, KARGO_FIRMALARI } from '../sabitler.js';
 import { bosDurum, durumRozeti } from './ortak.js';
 import { gecisReklami } from '../reklam.js';
+import { sesCal } from '../ses.js';
 
 const ADIMLAR = ['Talep', 'Onay', 'Kargo', 'Teslim'];
 
@@ -124,10 +125,11 @@ export function takasEkrani(kok, { sorgu }) {
 }
 
 async function eylemYap(b, eylem, t) {
-  const calistir = async (is, basari) => {
+  const calistir = async (is, basari, ses) => {
     yukleniyor(b, true);
     try {
       await is();
+      if (ses) sesCal(ses);
       if (basari) toast(basari, 'basari');
       titret('orta');
       return true;
@@ -142,23 +144,23 @@ async function eylemYap(b, eylem, t) {
       const digerleri = durum.gelen.filter((x) => x.kitapId === t.kitapId && x.id !== t.id && x.durum === 'bekliyor');
       const ek = digerleri.length ? ` Bu kitap için gelen diğer ${digerleri.length} talep otomatik olarak reddedilecek.` : '';
       if (!(await onayla('Talebi kabul et', `"${t.kitapAd}" kitabını ${t.isteyenAd} adlı okura karşı ödemeli kargoyla göndereceksin.${ek}`, { evet: 'Kabul et' }))) return;
-      if (await calistir(() => api.talepKabul(t, digerleri), 'Talep kabul edildi. Adres bilgisi açıldı.')) adresSayfasi(t);
+      if (await calistir(() => api.talepKabul(t, digerleri), 'Talep kabul edildi. Adres bilgisi açıldı.', 'kabul')) adresSayfasi(t);
       return;
     }
     case 'reddet':
       if (!(await onayla('Talep reddedilsin mi?', `${t.isteyenAd} adlı okurun talebi reddedilecek.`, { evet: 'Reddet', tehlike: true }))) return;
-      return calistir(() => api.talepReddet(t), 'Talep reddedildi.');
+      return calistir(() => api.talepReddet(t), 'Talep reddedildi.', 'yumusak');
     case 'vazgec':
       if (!(await onayla('Takastan vazgeç', 'Kitap yeniden rafta herkese açık olacak ve talep reddedilmiş sayılacak.', { evet: 'Vazgeç', hayir: 'Kapat', tehlike: true }))) return;
-      return calistir(() => api.talepGeriCek(t), 'Kitap yeniden rafta.');
+      return calistir(() => api.talepGeriCek(t), 'Kitap yeniden rafta.', 'yumusak');
     case 'iptal':
       if (!(await onayla('Talep geri çekilsin mi?', 'Kitabın sahibine talebinin iptal edildiği görünecek.', { evet: 'Geri çek', tehlike: true }))) return;
-      return calistir(() => api.talepIptal(t), 'Talebin geri çekildi.');
+      return calistir(() => api.talepIptal(t), 'Talebin geri çekildi.', 'yumusak');
     case 'kargola':
       return kargoSayfasi(t);
     case 'teslim':
       if (!(await onayla('Kitabı teslim aldın mı?', 'Kargo ücretini ödeyip kitabı teslim aldıysan onayla.', { evet: 'Evet, aldım' }))) return;
-      return calistir(() => api.teslimAldim(t), 'İyi okumalar! 📖');
+      return calistir(() => api.teslimAldim(t), 'İyi okumalar! 📖', 'teslim');
     case 'kopyala':
       try { await navigator.clipboard.writeText(t.kargo.takipNo); toast('Takip numarası kopyalandı.', 'basari'); } catch { toast(t.kargo.takipNo); }
   }
@@ -223,6 +225,7 @@ async function kargoSayfasi(t) {
     try {
       await api.kargola(t, firma, takip, durum.profil?.sehir || '');
       titret('guclu');
+      sesCal('kargo');
       await s.kapat();
       toast('Kitap yola çıktı! 🚚', 'basari');
       gecisReklami();

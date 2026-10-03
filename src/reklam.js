@@ -2,7 +2,7 @@
 // Reklam birimleri aşağıdaki REKLAM bloğunda; Android uygulama kimliği (ca-app-pub-…~…)
 // derleme iş akışında (.github/workflows/apk.yml) manifest'e yazılır.
 import { Capacitor } from '@capacitor/core';
-import { AdMob, BannerAdPluginEvents, BannerAdPosition, BannerAdSize } from '@capacitor-community/admob';
+import { AdMob, BannerAdPluginEvents, BannerAdPosition, BannerAdSize, RewardInterstitialAdPluginEvents } from '@capacitor-community/admob';
 
 const PLATFORM = Capacitor.getPlatform();
 
@@ -11,10 +11,12 @@ const REKLAM = PLATFORM === 'ios' ? {
   test: true,
   banner: 'ca-app-pub-3940256099942544/2934735716',
   gecis: 'ca-app-pub-3940256099942544/4411468910',
+  odullu: 'ca-app-pub-3940256099942544/6978759866',
 } : {
   test: false,
   banner: 'ca-app-pub-3204109869365538/8087489488',
   gecis: 'ca-app-pub-3204109869365538/9839554854',
+  odullu: 'ca-app-pub-3204109869365538/3414651264', // ödüllü geçiş: haftanın 2. kitap talebi
 };
 
 const ETKIN = Capacitor.isNativePlatform() && Capacitor.isPluginAvailable('AdMob');
@@ -82,4 +84,37 @@ export async function gecisReklami() {
     await AdMob.prepareInterstitial({ adId: REKLAM.gecis, isTesting: REKLAM.test });
     await AdMob.showInterstitial();
   } catch {}
+}
+
+// Ödüllü geçiş reklamı. Sonuç: 'odul' (izlendi), 'yok' (reklam yüklenemedi), 'kapatildi' (ödülden önce kapatıldı).
+// Reklam sistemi hiç yoksa (web/demo) 'yok' döner; çağıran taraf buna göre karar verir.
+export async function odulluReklam() {
+  if (!ETKIN) return 'yok';
+  if (!hazir) await reklamlariBaslat();
+  if (!hazir) return 'yok';
+  let odul = false;
+  let gosterilemedi = false;
+  const dinleyiciler = [];
+  try {
+    dinleyiciler.push(await AdMob.addListener(RewardInterstitialAdPluginEvents.Rewarded, () => { odul = true; }));
+    await AdMob.prepareRewardInterstitialAd({ adId: REKLAM.odullu, isTesting: REKLAM.test });
+  } catch {
+    dinleyiciler.forEach((d) => d.remove?.());
+    return 'yok';
+  }
+  try {
+    // Gösterim sözü yalnızca ödül kazanılınca çözülür; erken kapatmada çözülmez. Bu yüzden kapanma olayı beklenir.
+    let bitir;
+    const kapandi = new Promise((r) => { bitir = r; });
+    dinleyiciler.push(await AdMob.addListener(RewardInterstitialAdPluginEvents.Dismissed, () => bitir()));
+    dinleyiciler.push(await AdMob.addListener(RewardInterstitialAdPluginEvents.FailedToShow, () => { gosterilemedi = true; bitir(); }));
+    AdMob.showRewardInterstitialAd().then(() => { odul = true; }, () => { gosterilemedi = true; bitir(); });
+    await kapandi;
+    sonGecis = Date.now(); // hemen ardından bir de geçiş reklamı çıkmasın
+    return odul ? 'odul' : gosterilemedi ? 'yok' : 'kapatildi';
+  } catch {
+    return odul ? 'odul' : 'yok';
+  } finally {
+    dinleyiciler.forEach((d) => d.remove?.());
+  }
 }

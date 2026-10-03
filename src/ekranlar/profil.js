@@ -1,4 +1,5 @@
 // Profil: kişisel kart, istatistikler, rafım, ayarlar
+import { sesAcikMi, sesAyarla, sesCal } from '../ses.js';
 import { durum } from '../durum.js';
 import { api, demoMu } from '../veri/index.js';
 import { h, ikon, avatar, kapak, $, sayfaAc, onayla, toast, hataMetni, titret, zamanOnce } from '../ui.js';
@@ -70,6 +71,7 @@ export function profilEkrani(kok) {
     <section class="ayar-liste">
       <button data-git="yildizlar">${ikon('kupa', 20)}<span>Ayın yıldızları</span>${ikon('sag', 18)}</button>
       <button data-git="profil-duzenle">${ikon('kalem', 20)}<span>Profili düzenle</span>${ikon('sag', 18)}</button>
+      <button id="p-ses" role="switch" aria-checked="${sesAcikMi()}">${ikon('ses', 20)}<span>Uyarı sesleri</span><i class="anahtar ${sesAcikMi() ? 'acik' : ''}"></i></button>
       <button id="p-nasil">${ikon('soru', 20)}<span>Okudum nasıl çalışır?</span>${ikon('sag', 18)}</button>
       <button id="p-kurallar">${ikon('kalkan', 20)}<span>Topluluk kuralları</span>${ikon('sag', 18)}</button>
       <a href="https://dronopter-coder.github.io/okudum/gizlilik.html" target="_blank" rel="noopener">${ikon('kilit', 20)}<span>Gizlilik politikası</span>${ikon('sag', 18)}</a>
@@ -79,6 +81,14 @@ export function profilEkrani(kok) {
 
     kok.querySelectorAll('[data-b]').forEach((b) => b.addEventListener('click', () => { bolum = b.dataset.b; titret(); ciz(); }));
     $('#p-nasil', kok).addEventListener('click', nasilCalisir);
+    $('#p-ses', kok).addEventListener('click', (e) => {
+      const acik = !sesAcikMi();
+      sesAyarla(acik);
+      e.currentTarget.setAttribute('aria-checked', acik);
+      e.currentTarget.querySelector('.anahtar').classList.toggle('acik', acik);
+      titret();
+      if (acik) sesCal('gelen');
+    });
     $('#p-kurallar', kok).addEventListener('click', kurallar);
     $('#p-cikis', kok).addEventListener('click', async () => {
       if (!(await onayla('Çıkış yapılsın mı?', 'Rafın ve takasların hesabında güvende kalır.', { evet: 'Çıkış yap' }))) return;

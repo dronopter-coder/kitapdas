@@ -7,6 +7,8 @@ import { bosDurum, durumRozeti } from './ortak.js';
 import { git, geri } from '../yon.js';
 import { gecisReklami } from '../reklam.js';
 import { ozetiHazirla } from '../ozetAkisi.js';
+import { talepHakkiAl, odulKullan, haftalikTalepler } from '../talepHakki.js';
+import { sesCal } from '../ses.js';
 
 export function kitapEkrani(kok, { parca }) {
   const id = parca[0];
@@ -82,7 +84,7 @@ export function kitapEkrani(kok, { parca }) {
       const ozet = await ozetiHazirla(k);
       if (ozet) ozetSayfasi({ ...k, ozet });
     });
-    $('#k-iste', kok)?.addEventListener('click', () => { titret('orta'); talepSayfasi(k); });
+    $('#k-iste', kok)?.addEventListener('click', async () => { titret('orta'); if (await talepHakkiAl()) talepSayfasi(k); });
     $('#k-sil', kok)?.addEventListener('click', async () => {
       const aktifVar = durum.gelen.some((t) => t.kitapId === k.id && ['kabul', 'kargoda'].includes(t.durum));
       if (aktifVar) return toast('Bu kitap için süren bir takas var; önce onu tamamla.', 'hata');
@@ -141,8 +143,11 @@ async function talepSayfasi(k) {
     yukleniyor(b, true);
     try {
       if (f.kaydet.checked) await api.adresimiKaydet(durum.kullanici.uid, adres).catch(() => {});
+      const ikinci = haftalikTalepler().length >= 1;
       await api.talepOlustur(durum.kullanici, durum.profil, k, f.not.value.trim(), adres);
+      if (ikinci) odulKullan(); // haftanın ikinci talebi: izlenen reklamın hakkı kullanıldı
       titret('guclu');
+      sesCal('gonder');
       await s.kapat();
       basariSayfasi(k);
       gecisReklami();

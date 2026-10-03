@@ -34,3 +34,25 @@ export function ozetiTemizle(ham) {
   const sonuc = satirlar.join('\n');
   return sonuc.length > 2800 ? sonuc.slice(0, 2800).replace(/\s+\S*$/, '…') : sonuc;
 }
+
+// ——— Kapaktan ad ve yazar okuma (görsel) ———
+export const KAPAK_ISTEMI = `Fotoğraftaki kitabın adını ve yazarını bul. Kapak, sırt ya da iç sayfa olabilir.
+Yalnızca şu biçimde JSON döndür: {"ad": "...", "yazar": "..."}
+Kurallar:
+- Metni kapakta yazdığı gibi, Türkçe karakterleriyle yaz; büyük harfle yazılmışsa normal yazım biçimine çevir (Ör. "KÜRK MANTOLU MADONNA" → "Kürk Mantolu Madonna").
+- Yayınevi, çevirmen, seri adı, alıntı ya da slogan yazma.
+- Okuyamadığın ya da emin olmadığın alanı boş bırak (""). Asla tahmin edip uydurma.
+- Fotoğrafta kitap yoksa iki alanı da boş bırak.`;
+
+// Model cevabından { ad, yazar } çıkar; boş/geçersizse null
+export function kapakCevabi(ham) {
+  try {
+    const m = String(ham || '').match(/\{[\s\S]*\}/);
+    const j = JSON.parse(m ? m[0] : ham);
+    const temiz = (s, n) => String(s || '').replace(/\s+/g, ' ').replace(/^["'“”]+|["'“”]+$/g, '').trim().slice(0, n);
+    const sonuc = { ad: temiz(j.ad, 120), yazar: temiz(j.yazar, 80) };
+    return sonuc.ad || sonuc.yazar ? sonuc : null;
+  } catch {
+    return null;
+  }
+}

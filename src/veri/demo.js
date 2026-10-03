@@ -231,6 +231,12 @@ export async function ozetHazirla(kitapId, ad, yazar) {
   return k.ozet;
 }
 
+// Demo: kapak okuma taklidi (gerçek sürümde Gemini fotoğrafa bakar)
+export async function kapakOku() {
+  await bekle(1600);
+  return { ad: 'Kürk Mantolu Madonna', yazar: 'Sabahattin Ali' };
+}
+
 export async function kitapSil(kitap) {
   veri.kitaplar = veri.kitaplar.filter((k) => k.id !== kitap.id);
   kaydet();

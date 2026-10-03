@@ -64,6 +64,16 @@ jobs:
           x='<?xml version="1.0" encoding="utf-8"?><adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android"><background android:drawable="@color/kd_bg"/><foreground android:drawable="@mipmap/ic_launcher_foreground"/></adaptive-icon>'
           open(R+'/mipmap-anydpi-v26/ic_launcher.xml','w').write(x); open(R+'/mipmap-anydpi-v26/ic_launcher_round.xml','w').write(x)
           open(R+'/values/kd_colors.xml','w').write('<?xml version="1.0" encoding="utf-8"?><resources><color name="kd_bg">#1E2235</color></resources>')
+          # Bildirim çubuğu simgesi: logonun beyaz silueti (Android küçük simgeleri tek renk ister)
+          a=fg.split()[3]; kutu=a.getbbox(); a=a.crop(kutu)
+          kenar=int(max(a.size)*1.18); kare=Image.new('L',(kenar,kenar),0); kare.paste(a,((kenar-a.size[0])//2,(kenar-a.size[1])//2))
+          for d,n in [('mdpi',24),('hdpi',36),('xhdpi',48),('xxhdpi',72),('xxxhdpi',96)]:
+              p=f'{R}/drawable-{d}/'; os.makedirs(p,exist_ok=True)
+              im=Image.new('RGBA',(n,n),(255,255,255,0)); beyaz=Image.new('RGBA',(n,n),(255,255,255,255))
+              im.paste(beyaz,(0,0),kare.resize((n,n),Image.LANCZOS)); im.save(p+'ic_stat_okudum.png')
+          # Bildirim sesi (kaynak/bildirim-sesi.mjs ile üretilir)
+          os.makedirs(R+'/raw',exist_ok=True)
+          import shutil; shutil.copy('kaynak/okudum_bildirim.wav', R+'/raw/okudum_bildirim.wav')
           PY
       - run: npx cap sync android
       - name: Sabit debug imzası (güncellemeler eskisinin üzerine kurulsun, Google girişi SHA-1 ile eşleşsin)

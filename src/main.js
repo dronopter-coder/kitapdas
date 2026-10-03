@@ -6,6 +6,7 @@ import { ikon, $, titret, toast, hataMetni, ustSayfayiKapat } from './ui.js';
 import { git, geri, yiginiSifirla, tarayiciGeriGitti, rotalayiciAyarla } from './yon.js';
 import { App } from '@capacitor/app';
 import { reklamlariBaslat, bannerGoster } from './reklam.js';
+import { bildirimleriBaslat, bildirimleriSifirla, talepDegisti } from './bildirim.js';
 import { girisEkrani } from './ekranlar/giris.js';
 import { kesfetEkrani } from './ekranlar/kesfet.js';
 import { araEkrani } from './ekranlar/ara.js';
@@ -141,6 +142,7 @@ function verileriDinle(uid) {
     const sirala = (a, b) => b.guncelleme - a.guncelleme;
     durum.gelen = gelen.sort(sirala);
     durum.giden = giden.sort(sirala);
+    talepDegisti(gelen, giden);
     degisti('talepler');
   }, hata);
 }
@@ -188,10 +190,12 @@ function baslat() {
         durum.profil = { ad: k.ad, foto: k.foto, sehir: '' };
         toast(hataMetni(e), 'hata');
       }
+      bildirimleriBaslat(k.uid, { dokununca: (sekme) => git(sekme ? `takas?sekme=${sekme}` : 'takas') });
       verileriDinle(k.uid);
       reklamlariBaslat();
     } else {
       durum.profil = null;
+      bildirimleriSifirla();
     }
     $('#acilis')?.classList.add('gizli');
     setTimeout(() => $('#acilis')?.remove(), 500);

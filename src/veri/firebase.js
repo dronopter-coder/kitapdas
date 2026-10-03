@@ -12,7 +12,7 @@ import {
 } from 'firebase/firestore';
 import { getAI, getGenerativeModel, GoogleAIBackend } from 'firebase/ai';
 import { Capacitor } from '@capacitor/core';
-import { MODELLER, SISTEM_ISTEMI, istem, ozetiTemizle } from '../ozet.js';
+import { MODELLER, SISTEM_ISTEMI, istem, ozetiTemizle, KAPAK_ISTEMI, kapakCevabi } from '../ozet.js';
 import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 
 let app, auth, db, yz;
@@ -104,6 +104,24 @@ export async function ozetHazirla(kitapId, ad, yazar) {
   throw sonHata;
 }
 
+// Kitap fotoğrafından ad ve yazar (yalnızca forma öneri; hiçbir yere kaydedilmez)
+export async function kapakOku(dataUrl) {
+  yz ||= getAI(app, { backend: new GoogleAIBackend() });
+  const [bas, veri] = String(dataUrl).split(',');
+  const mimeType = (bas.match(/data:([^;]+)/) || [])[1] || 'image/jpeg';
+  let sonHata;
+  for (const model of MODELLER) {
+    try {
+      const m = getGenerativeModel(yz, { model, generationConfig: { temperature: 0, responseMimeType: 'application/json' } });
+      const cevap = await m.generateContent([KAPAK_ISTEMI, { inlineData: { data: veri, mimeType } }]);
+      return kapakCevabi(cevap.response.text());
+    } catch (e) {
+      sonHata = e;
+    }
+  }
+  throw sonHata;
+}
+
 // Herkese açık profiller (ad, şehir, fotoğraf): sıralama ve gönderim listeleri için
 export async function profilleriGetir(uidler) {
   const sonuc = {};
@@ -165,10 +183,13 @@ export async function kitapSil(kitap) {
 export function talepleriDinle(uid, cb, hata) {
   let gelen = [];
   let giden = [];
-  const yay = () => cb({ gelen, giden });
+  let g1 = false;
+  let g2 = false;
+  // İki liste de ilk kez gelmeden yayımlanmaz (bildirimler yarım listeyle karşılaştırma yapmasın)
+  const yay = () => { if (g1 && g2) cb({ gelen, giden }); };
   const c = collection(db, 'talepler');
-  const k1 = onSnapshot(query(c, where('sahipId', '==', uid)), (s) => { gelen = listele(s); yay(); }, hata);
-  const k2 = onSnapshot(query(c, where('isteyenId', '==', uid)), (s) => { giden = listele(s); yay(); }, hata);
+  const k1 = onSnapshot(query(c, where('sahipId', '==', uid)), (s) => { gelen = listele(s); g1 = true; yay(); }, hata);
+  const k2 = onSnapshot(query(c, where('isteyenId', '==', uid)), (s) => { giden = listele(s); g2 = true; yay(); }, hata);
   return () => { k1(); k2(); };
 }
 

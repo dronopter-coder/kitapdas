@@ -30,6 +30,7 @@ export function ekleEkrani(kok) {
         <input type="file" accept="image/*" id="e-dosya" hidden/>
       </div>
 
+      <div class="yz-durum" id="e-yz" hidden></div>
       <label class="alan"><span>Kitabın adı</span><input name="ad" maxlength="120" placeholder="Ör. Kürk Mantolu Madonna" required/></label>
       <label class="alan"><span>Yazar</span><input name="yazar" maxlength="80" placeholder="Ör. Sabahattin Ali" required/></label>
 
@@ -59,7 +60,39 @@ export function ekleEkrani(kok) {
     $('#e-onizleme', kok).innerHTML = foto
       ? `${kapak({ ad, yazar, foto }, 'onizleme')}<button type="button" class="foto-kaldir" aria-label="Fotoğrafı kaldır">${ikon('x', 18, 2.6)}</button>`
       : bosHal;
-    $('.foto-kaldir', kok)?.addEventListener('click', () => { foto = ''; onizle(); });
+    $('.foto-kaldir', kok)?.addEventListener('click', () => { foto = ''; okumaNo++; durumYaz(''); f.ad.classList.remove('yz-bekliyor'); f.yazar.classList.remove('yz-bekliyor'); onizle(); });
+  };
+
+  // Yapay zekâ fotoğraftan kitabın adını ve yazarını okur; yalnızca boş alanlar doldurulur.
+  let okumaNo = 0;
+  const durumYaz = (html, sinif = '') => {
+    const d = $('#e-yz', kok);
+    d.className = `yz-durum ${sinif}`;
+    d.innerHTML = html;
+    d.hidden = !html;
+  };
+  const kapaktanDoldur = async (veri) => {
+    if (f.ad.value.trim() && f.yazar.value.trim()) return;
+    const no = ++okumaNo;
+    durumYaz(`<i class="yz-nokta"></i><span>Yapay zekâ kapağı okuyor…</span>`, 'okuyor');
+    f.ad.classList.add('yz-bekliyor');
+    f.yazar.classList.add('yz-bekliyor');
+    let sonuc = null;
+    try { sonuc = await api.kapakOku(veri); } catch { sonuc = null; }
+    if (no !== okumaNo || !kok.isConnected) return;
+    f.ad.classList.remove('yz-bekliyor');
+    f.yazar.classList.remove('yz-bekliyor');
+    const doldurulan = [];
+    if (sonuc?.ad && !f.ad.value.trim()) { f.ad.value = sonuc.ad; doldurulan.push(f.ad); }
+    if (sonuc?.yazar && !f.yazar.value.trim()) { f.yazar.value = sonuc.yazar; doldurulan.push(f.yazar); }
+    if (doldurulan.length) {
+      doldurulan.forEach((g) => { g.classList.remove('yz-doldu'); void g.offsetWidth; g.classList.add('yz-doldu'); });
+      durumYaz(`${ikon('parilti', 15)}<span>Kapaktan okundu, doğruluğunu kontrol et.</span>`, 'tamam');
+      onizle();
+      titret();
+    } else {
+      durumYaz(`${ikon('bilgi', 15)}<span>Kapak okunamadı, adı ve yazarı sen yaz.</span>`, 'olmadi');
+    }
   };
 
   const fotoAl = async (kaynak) => {
@@ -69,6 +102,7 @@ export function ekleEkrani(kok) {
       foto = await fotoKucult(yol, 560, 0.75); // veritabanına sığacak boyut
       onizle();
       titret();
+      kapaktanDoldur(foto);
     } catch (e) {
       toast('Fotoğraf alınamadı: ' + (e?.message || ''), 'hata');
     }
